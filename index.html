@@ -318,39 +318,147 @@
   </div>
 
   <script>
-    // 선생님 Apps Script Web App URL 연동
     const GOOGLE_SHEET_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyU4fpwiJTUsuYGXdFM6tXTstOqVHXyCbKMvZYSVB9gPOFUYvEj_ylu0jh9vHbswMhUIQ/exec";
 
+    // =========================================================================
+    // 🔊 [오디오 신디사이저 엔진 강화]
+    // =========================================================================
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
 
-    function playTone(freq, duration = 0.08, type = 'sine') {
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new AudioCtx();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    // 1. 선 그을 때 "촥-! / 챱-!" 타격감 사운드 (콤보 피치 상승)
+    function soundPass(step = 0) {
       try {
-        if (!audioCtx) audioCtx = new AudioCtx();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        const ctx = getAudioContext();
+        const t = ctx.currentTime;
+
+        // [Tone 1: 브러시 마찰 스위프음]
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const baseFreq = 400 + Math.min(step * 45, 600);
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(baseFreq * 1.6, t);
+        osc.frequency.exponentialRampToValueAtTime(baseFreq, t + 0.08);
+
+        gain.gain.setValueAtTime(0.2, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+
         osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.08);
+
+        // [Tone 2: 촥! 하는 화이트 노이즈 찰나 합성]
+        const bufferSize = ctx.sampleRate * 0.03;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 2400 + step * 50;
+        filter.Q.value = 3.0;
+
+        const noiseGain = ctx.createGain();
+        noiseGain.gain.setValueAtTime(0.12, t);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+
+        noise.connect(filter);
+        filter.connect(noiseGain);
+        noiseGain.connect(ctx.destination);
+
+        noise.start(t);
       } catch (e) {}
     }
 
-    function soundPass() { playTone(540, 0.06); }
-    function soundWin() {
-      playTone(523, 0.08);
-      setTimeout(() => playTone(659, 0.08), 80);
-      setTimeout(() => playTone(783, 0.08), 160);
-      setTimeout(() => playTone(1046, 0.2), 240);
-    }
-    function soundFail() { playTone(160, 0.25, 'sawtooth'); }
+    // 2. 황금 필수 다리 통과 "영롱한 크리스탈 벨"
     function soundKeyPassed() {
-      playTone(880, 0.1, 'triangle');
-      setTimeout(() => playTone(1174, 0.15, 'triangle'), 100);
+      try {
+        const ctx = getAudioContext();
+        const t = ctx.currentTime;
+        const freqs = [1046.5, 1318.5, 1567.98]; // C6, E6, G6
+
+        freqs.forEach((f, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, t + idx * 0.04);
+          gain.gain.setValueAtTime(0.15, t + idx * 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + idx * 0.04 + 0.35);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(t + idx * 0.04);
+          osc.stop(t + idx * 0.04 + 0.35);
+        });
+      } catch (e) {}
+    }
+
+    // 3. 스테이지 클리어 "화려한 띠리링~ 팡파레 멜로디"
+    function soundWin() {
+      try {
+        const ctx = getAudioContext();
+        const t = ctx.currentTime;
+        // Do(523.25) -> Mi(659.25) -> Sol(783.99) -> Si(987.77) -> High Do(1046.50) -> Super High Mi(1318.51)
+        const notes = [523.25, 659.25, 783.99, 987.77, 1046.50, 1318.51];
+
+        notes.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          const noteStart = t + i * 0.07;
+          const isLast = (i >= notes.length - 2);
+
+          osc.type = isLast ? 'triangle' : 'sine';
+          osc.frequency.setValueAtTime(freq, noteStart);
+
+          const dur = isLast ? 0.6 : 0.2;
+          gain.gain.setValueAtTime(0.18, noteStart);
+          gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + dur);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(noteStart);
+          osc.stop(noteStart + dur);
+        });
+      } catch (e) {}
+    }
+
+    // 4. 실패 / 손 뗌 ("땡/뿌우-")
+    function soundFail() {
+      try {
+        const ctx = getAudioContext();
+        const t = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, t);
+        osc.frequency.linearRampToValueAtTime(110, t + 0.25);
+
+        gain.gain.setValueAtTime(0.2, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.25);
+      } catch (e) {}
     }
 
     let currentStudent = { id: "", name: "" };
@@ -396,9 +504,7 @@
       { q: "절댓값이 7인 양수는 무엇일까요?", a: "7" }
     ];
 
-    // =========================================================================
-    // 🌟 100% 한붓그리기 가능 스테이지 생성기
-    // =========================================================================
+    // --- 100개 한붓그리기 스테이지 생성 엔진 ---
     const stages = [];
 
     function getDiffInfo(stNum) {
@@ -563,7 +669,6 @@
       stages.push(buildUniqueStage(i));
     }
 
-    // --- DOM 요소 참조 ---
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
@@ -634,6 +739,9 @@
       currentStudent.name = sname;
       displayStudent.innerText = `대원: ${sid} ${sname}`;
       loginModal.style.display = 'none';
+
+      // 첫 클릭 시 오디오 컨텍스트 활성화
+      getAudioContext();
       initStage(0);
     }
 
@@ -703,6 +811,7 @@
 
     function onStart(e) {
       if (isCleared) return;
+      getAudioContext();
       const pos = getPos(e);
       pointerPos = pos;
       const node = findNodeAt(pos.x, pos.y);
@@ -711,7 +820,7 @@
         isDrawing = true;
         currentNode = node;
         visitedEdges = [];
-        soundPass();
+        soundPass(0);
         uiMsg.innerText = "선을 따라 다음 점으로 드래그하세요!";
         uiMsg.style.color = "#38bdf8";
         updateUI();
@@ -738,8 +847,11 @@
           visitedEdges.push(edgeIndex);
           currentNode = targetNode;
           
-          if (crossedEdge.isKey) soundKeyPassed();
-          else soundPass();
+          if (crossedEdge.isKey) {
+            soundKeyPassed();
+          } else {
+            soundPass(visitedEdges.length);
+          }
           
           updateUI();
 
@@ -804,9 +916,6 @@
       render();
     });
 
-    // =========================================================================
-    // 🚀 [선생님께 최종 제출 버튼] 클릭 시 1회 통계 전송 로직
-    // =========================================================================
     btnSubmitSheet.addEventListener('click', () => {
       const clearedIds = Object.keys(stageRecords)
         .map(Number)
@@ -861,7 +970,6 @@
       });
     });
 
-    // --- 리포트 조회 모달 ---
     btnViewRecords.addEventListener('click', () => {
       recordStudentInfo.innerText = `학번: ${currentStudent.id} | 성명: ${currentStudent.name}`;
       const clearedCount = Object.values(stageRecords).filter(r => r.cleared).length;
@@ -918,7 +1026,6 @@
       document.body.removeChild(link);
     });
 
-    // --- 퀴즈 모달 ---
     btnQuizHint.addEventListener('click', () => {
       currentQuiz = quizPool[Math.floor(Math.random() * quizPool.length)];
       quizQuestion.innerText = currentQuiz.q;
@@ -963,7 +1070,6 @@
       if (e.key === 'Enter') btnQuizSubmit.click();
     });
 
-    // --- 캔버스 렌더링 ---
     function drawEdge(u, v, curvature, isVisited, isKey) {
       ctx.beginPath();
       ctx.lineWidth = isVisited ? 6 : (isKey ? 5 : 3.5);
