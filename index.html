@@ -241,7 +241,7 @@
 </head>
 <body>
 
-  <!-- 학번 4자리 로그인 모달 -->
+  <!-- 1. 학번 4자리 로그인 모달 -->
   <div class="modal-overlay" id="login-modal">
     <div class="modal-box">
       <h3>👋 수학 탐구 대원 등록</h3>
@@ -288,7 +288,7 @@
     <button id="btn-next" style="display: none; background: #22c55e; color: white;">다음 스테이지 ▶</button>
   </div>
 
-  <!-- 퀴즈 모달 -->
+  <!-- 2. 퀴즈 모달 -->
   <div class="modal-overlay" id="quiz-modal" style="display: none;">
     <div class="modal-box">
       <h3>📐 힌트 해금 수학 퀴즈</h3>
@@ -301,7 +301,7 @@
     </div>
   </div>
 
-  <!-- 학습 기록 모달 -->
+  <!-- 3. 학습 기록 모달 -->
   <div class="modal-overlay" id="records-modal" style="display: none;">
     <div class="modal-box" style="max-width: 520px;">
       <h3>📊 한붓그리기 학습 리포트</h3>
@@ -329,7 +329,7 @@
     </div>
   </div>
 
-  <!-- 최종 제출 모달 -->
+  <!-- 4. 최종 제출 모달 -->
   <div class="modal-overlay" id="submit-modal" style="display: none;">
     <div class="modal-box">
       <h3>🚀 선생님께 최종 제출하기</h3>
@@ -348,7 +348,7 @@
   <script>
     const GOOGLE_SHEET_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyU4fpwiJTUsuYGXdFM6tXTstOqVHXyCbKMvZYSVB9gPOFUYvEj_ylu0jh9vHbswMhUIQ/exec";
 
-    // --- 오디오 신디사이저 ---
+    // --- 사운드 신디사이저 엔진 ---
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
 
@@ -421,6 +421,42 @@
       } catch (e) {}
     }
 
+    function soundWarp() {
+      try {
+        const ctx = getAudioContext();
+        const t = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(300, t);
+        osc.frequency.exponentialRampToValueAtTime(1200, t + 0.2);
+        gain.gain.setValueAtTime(0.2, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.2);
+      } catch(e) {}
+    }
+
+    function soundIceCrack() {
+      try {
+        const ctx = getAudioContext();
+        const t = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(800, t);
+        osc.frequency.linearRampToValueAtTime(200, t + 0.15);
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.15);
+      } catch(e) {}
+    }
+
     function soundWin() {
       try {
         const ctx = getAudioContext();
@@ -462,7 +498,7 @@
       } catch (e) {}
     }
 
-    // --- 학생 정보 및 진행도 관리 ---
+    // --- 학생 정보 및 진행도 ---
     let currentStudent = { id: "", name: "" };
     const stageRecords = {};
     let unlockedMaxStage = 1;
@@ -508,23 +544,29 @@
     ];
 
     // =========================================================================
-    // 🌟 100개 스테이지 생성 엔진
+    // 🌟 [완전 리뉴얼] 100개 다채로운 테마 & 기믹 스테이지 엔진
+    // Edge properties:
+    // - type: 0(일반), 1(일방통행 u->v), 2(워프 포털: 선 소모 없음), 3(얼음 다리)
+    // - isKey: 황금 필수 다리
+    // - curvature: 곡선 휘어짐 정도
     // =========================================================================
     const stages = [];
 
     function getDiffInfo(stNum) {
-      if (stNum <= 20) return { name: "입문(필수)", cls: "diff-1" };
-      if (stNum <= 40) return { name: "초급(곡선)", cls: "diff-2" };
-      if (stNum <= 60) return { name: "중급(기하)", cls: "diff-3" };
-      if (stNum <= 80) return { name: "고급(대칭망)", cls: "diff-4" };
-      return { name: "마스터(복합망)", cls: "diff-5" };
+      if (stNum <= 20) return { name: "입문(동물/기초)", cls: "diff-1" };
+      if (stNum <= 40) return { name: "초급(사물/기믹)", cls: "diff-2" };
+      if (stNum <= 60) return { name: "중급(자연/우주)", cls: "diff-3" };
+      if (stNum <= 80) return { name: "고급(건축/타워)", cls: "diff-4" };
+      return { name: "마스터(입체/프랙탈)", cls: "diff-5" };
     }
 
     function validateAndFixEulerian(nodes, edges) {
       const degrees = new Array(nodes.length).fill(0);
       edges.forEach(e => {
-        degrees[e.u]++;
-        degrees[e.v]++;
+        if (e.type !== 2) { // 워프 포털은 차수 계산 제외
+          degrees[e.u]++;
+          degrees[e.v]++;
+        }
       });
 
       let oddNodes = [];
@@ -536,19 +578,20 @@
       while (oddNodes.length > 2) {
         const u = oddNodes.pop();
         const v = oddNodes.pop();
-        edges.push({ u, v, curvature: curveToggle });
+        edges.push({ u, v, curvature: curveToggle, type: 0 });
         curveToggle = (curveToggle > 0) ? -(curveToggle + 10) : -(curveToggle - 10);
       }
 
       return edges;
     }
 
-    function buildUniqueStage(level) {
+    function buildDiverseStage(level) {
       const cx = 270, cy = 190;
-      let title = `도형 Lv.${level}`;
+      let title = `테마 Lv.${level}`;
       let nodes = [];
       let edges = [];
 
+      // 1~20: 동물 및 기초 형상 (나비, 박쥐, 거미줄, 물고기, 게 등)
       if (level === 1) {
         title = "기본 삼각형";
         nodes = [{id:0, x:270, y:80}, {id:1, x:160, y:290}, {id:2, x:380, y:290}];
@@ -566,33 +609,18 @@
         nodes = [{id:0, x:160, y:130}, {id:1, x:380, y:130}, {id:2, x:380, y:290}, {id:3, x:160, y:290}, {id:4, x:270, y:220}];
         edges = [{u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},{u:0,v:4},{u:1,v:4},{u:2,v:4},{u:3,v:4}];
       } else if (level === 5) {
-        title = "쌍둥이 다이아몬드";
-        nodes = [{id:0, x:270, y:60}, {id:1, x:170, y:150}, {id:2, x:370, y:150}, {id:3, x:270, y:240}, {id:4, x:170, y:330}, {id:5, x:370, y:330}];
-        edges = [{u:0,v:1},{u:0,v:2},{u:1,v:3},{u:2,v:3},{u:1,v:2},{u:3,v:4},{u:3,v:5},{u:4,v:5},{u:1,v:4},{u:2,v:5}];
+        title = "헤엄치는 금붕어";
+        nodes = [{id:0, x:130, y:190}, {id:1, x:270, y:100}, {id:2, x:270, y:280}, {id:3, x:390, y:190}, {id:4, x:460, y:110}, {id:5, x:460, y:270}];
+        edges = [{u:0,v:1, curvature:-20},{u:0,v:2, curvature:20},{u:1,v:3, curvature:-20},{u:2,v:3, curvature:20},{u:1,v:2},{u:3,v:4},{u:4,v:5},{u:5,v:3},{u:1,v:4, curvature:35}];
       } else if (level === 6) {
         title = "바람개비 사각연";
         nodes = [{id:0, x:270, y:70}, {id:1, x:410, y:190}, {id:2, x:270, y:310}, {id:3, x:130, y:190}, {id:4, x:270, y:190}];
-        edges = [
-          {u:0, v:1}, {u:1, v:2}, {u:2, v:3}, {u:3, v:0},
-          {u:0, v:4}, {u:1, v:4}, {u:2, v:4}, {u:3, v:4},
-          {u:0, v:2, curvature: 55}
-        ];
+        edges = [{u:0, v:1}, {u:1, v:2}, {u:2, v:3}, {u:3, v:0}, {u:0, v:4}, {u:1, v:4}, {u:2, v:4}, {u:3, v:4}, {u:0, v:2, curvature: 55}];
       } else if (level === 7) {
-        title = "삼각 피라미드 타워";
-        nodes = [{id:0, x:270, y:60}, {id:1, x:200, y:160}, {id:2, x:340, y:160}, {id:3, x:130, y:300}, {id:4, x:270, y:270}, {id:5, x:410, y:300}];
-        edges = [
-          {u:0,v:1},{u:0,v:2},{u:1,v:2},{u:1,v:3},{u:1,v:4},{u:2,v:4},{u:2,v:5},{u:3,v:4},{u:4,v:5},
-          {u:3,v:5, curvature: 55}
-        ];
+        title = "나비의 날개짓";
+        nodes = [{id:0, x:270, y:120}, {id:1, x:270, y:260}, {id:2, x:130, y:110}, {id:3, x:130, y:270}, {id:4, x:410, y:110}, {id:5, x:410, y:270}];
+        edges = [{u:0,v:1},{u:0,v:2, curvature:-30},{u:2,v:3},{u:3,v:1, curvature:30},{u:0,v:4, curvature:30},{u:4,v:5},{u:5,v:1, curvature:-30},{u:0,v:3},{u:1,v:2},{u:0,v:5},{u:1,v:4}];
       } else if (level === 8) {
-        title = "삼중 연결 삼각별";
-        nodes = [{id:0, x:270, y:60}, {id:1, x:380, y:270}, {id:2, x:160, y:270}, {id:3, x:270, y:150}, {id:4, x:330, y:230}, {id:5, x:210, y:230}];
-        edges = [
-          {u:0,v:1},{u:1,v:2},{u:2,v:0},{u:3,v:4},{u:4,v:5},{u:5,v:3},
-          {u:0,v:3},{u:1,v:4},{u:2,v:5},
-          {u:0,v:4, curvature:30},{u:1,v:5, curvature:30}
-        ];
-      } else if (level === 9) {
         title = "황금 오각별";
         const R = 110;
         for(let k=0; k<5; k++){
@@ -600,13 +628,23 @@
           nodes.push({id:k, x: Math.round(cx + R*Math.cos(ang)), y: Math.round(cy + R*Math.sin(ang))});
         }
         edges = [{u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:4},{u:4,v:0},{u:0,v:2, isKey: true},{u:2,v:4},{u:4,v:1},{u:1,v:3},{u:3,v:0}];
+      } else if (level === 9) {
+        title = "거미줄 네트";
+        nodes = [
+          {id:0, x:270, y:70}, {id:1, x:400, y:190}, {id:2, x:270, y:310}, {id:3, x:140, y:190},
+          {id:4, x:270, y:130}, {id:5, x:340, y:190}, {id:6, x:270, y:250}, {id:7, x:200, y:190}
+        ];
+        edges = [
+          {u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},
+          {u:4,v:5},{u:5,v:6},{u:6,v:7},{u:7,v:4},
+          {u:0,v:4},{u:1,v:5},{u:2,v:6},{u:3,v:7},
+          {u:4,v:6, curvature:30},{u:5,v:7, curvature:30}
+        ];
       } else if (level === 10) {
         title = "다중 브릿지 큐브";
         nodes = [
-          {id:0, x:140, y:80},  {id:1, x:400, y:80},
-          {id:2, x:400, y:300}, {id:3, x:140, y:300},
-          {id:4, x:210, y:140}, {id:5, x:330, y:140},
-          {id:6, x:330, y:240}, {id:7, x:210, y:240}
+          {id:0, x:140, y:80}, {id:1, x:400, y:80}, {id:2, x:400, y:300}, {id:3, x:140, y:300},
+          {id:4, x:210, y:140}, {id:5, x:330, y:140}, {id:6, x:330, y:240}, {id:7, x:210, y:240}
         ];
         edges = [
           {u:0, v:1}, {u:1, v:2}, {u:2, v:3}, {u:3, v:0},
@@ -614,78 +652,161 @@
           {u:0, v:4}, {u:1, v:5}, {u:2, v:6}, {u:3, v:7},
           {u:4, v:6}, {u:5, v:7}
         ];
-      } else if (level <= 30) {
-        const sub = level - 10;
-        if (sub === 1) {
-          title = "초승달과 활";
-          nodes = [{id:0, x:150, y:190}, {id:1, x:390, y:190}, {id:2, x:270, y:80}];
-          edges = [{u:0,v:1, curvature:0},{u:0,v:1, curvature:70, isKey:true},{u:0,v:2},{u:1,v:2}];
-        } else if (sub === 2) {
-          title = "헤엄치는 금붕어";
-          nodes = [{id:0, x:130, y:190}, {id:1, x:270, y:100}, {id:2, x:270, y:280}, {id:3, x:390, y:190}, {id:4, x:460, y:110}, {id:5, x:460, y:270}];
-          edges = [{u:0,v:1, curvature:-20},{u:0,v:2, curvature:20},{u:1,v:3, curvature:-20},{u:2,v:3, curvature:20},{u:1,v:2},{u:3,v:4},{u:4,v:5},{u:5,v:3},{u:1,v:4, curvature:35}];
-        } else if (sub === 3) {
-          title = "나비의 날개짓";
-          nodes = [{id:0, x:270, y:120}, {id:1, x:270, y:260}, {id:2, x:130, y:110}, {id:3, x:130, y:270}, {id:4, x:410, y:110}, {id:5, x:410, y:270}];
-          edges = [{u:0,v:1},{u:0,v:2, curvature:-30},{u:2,v:3},{u:3,v:1, curvature:30},{u:0,v:4, curvature:30},{u:4,v:5},{u:5,v:1, curvature:-30},{u:0,v:3},{u:1,v:2},{u:0,v:5},{u:1,v:4}];
-        } else if (sub === 4) {
-          title = "눈동자 안경";
-          nodes = [{id:0, x:180, y:190}, {id:1, x:270, y:190}, {id:2, x:360, y:190}, {id:3, x:180, y:100}, {id:4, x:360, y:100}];
-          edges = [{u:0,v:1},{u:1,v:2},{u:0,v:3, curvature:-40},{u:3,v:1, curvature:-40},{u:0,v:1, curvature:40},{u:1,v:4, curvature:-40},{u:4,v:2, curvature:-40},{u:1,v:2, curvature:40}];
-        } else {
-          const N = 4 + (sub % 4);
-          const R = 115;
-          for(let k=0; k<N; k++){
-            const ang = -Math.PI/2 + (k*2*Math.PI/N);
-            nodes.push({id:k, x: Math.round(cx + R*Math.cos(ang)), y: Math.round(cy + R*Math.sin(ang))});
-          }
-          title = `곡선 아치 다각형 ${N}호 (Lv.${level})`;
-          for(let k=0; k<N; k++){
-            const next = (k+1)%N;
-            edges.push({u:k, v:next, curvature: 35});
-            edges.push({u:k, v:next, curvature: -35});
-          }
+      } else if (level === 11) {
+        title = "밤을 나는 박쥐";
+        nodes = [{id:0, x:270, y:190}, {id:1, x:150, y:90}, {id:2, x:100, y:210}, {id:3, x:210, y:280}, {id:4, x:390, y:90}, {id:5, x:440, y:210}, {id:6, x:330, y:280}];
+        edges = [
+          {u:0,v:1},{u:1,v:2, curvature:-20},{u:2,v:3},{u:3,v:0},{u:1,v:3},
+          {u:0,v:4},{u:4,v:5, curvature:20},{u:5,v:6},{u:6,v:0},{u:4,v:6}
+        ];
+      } else if (level === 12) {
+        title = "바다 꽃게의 집게발";
+        nodes = [{id:0, x:200, y:230}, {id:1, x:340, y:230}, {id:2, x:270, y:160}, {id:3, x:140, y:110}, {id:4, x:110, y:180}, {id:5, x:400, y:110}, {id:6, x:430, y:180}];
+        edges = [
+          {u:0,v:1},{u:1,v:2},{u:2,v:0},{u:0,v:3},{u:3,v:4},{u:4,v:0},
+          {u:1,v:5},{u:5,v:6},{u:6,v:1},{u:2,v:3},{u:2,v:5}
+        ];
+      } else if (level === 13) {
+        title = "일방통행 급류 협곡";
+        nodes = [{id:0, x:150, y:190}, {id:1, x:270, y:90}, {id:2, x:390, y:190}, {id:3, x:270, y:290}];
+        edges = [
+          {u:0, v:1, type: 1}, // 일방통행
+          {u:1, v:2},
+          {u:2, v:3, type: 1}, // 일방통행
+          {u:3, v:0},
+          {u:1, v:3}
+        ];
+      } else if (level === 14) {
+        title = "차원 이동 워프 게이트";
+        nodes = [{id:0, x:130, y:120}, {id:1, x:230, y:120}, {id:2, x:180, y:230}, {id:3, x:360, y:150}, {id:4, x:460, y:250}, {id:5, x:320, y:290}];
+        edges = [
+          {u:0, v:1}, {u:1, v:2}, {u:2, v:0},
+          {u:2, v:3, type: 2}, // 워프 포털
+          {u:3, v:4}, {u:4, v:5}, {u:5, v:3}
+        ];
+      } else if (level === 15) {
+        title = "아슬아슬 얼음 다리";
+        nodes = [{id:0, x:160, y:120}, {id:1, x:380, y:120}, {id:2, x:380, y:270}, {id:3, x:160, y:270}, {id:4, x:270, y:190}];
+        edges = [
+          {u:0, v:1}, {u:1, v:2}, {u:2, v:3}, {u:3, v:0},
+          {u:0, v:4, type: 3}, // 얼음 다리
+          {u:1, v:4}, {u:2, v:4}, {u:3, v:4, type: 3}
+        ];
+      } else if (level === 16) {
+        title = "이중 나선 더블 루프";
+        nodes = [{id:0, x:180, y:190}, {id:1, x:360, y:190}, {id:2, x:270, y:80}, {id:3, x:270, y:300}];
+        edges = [
+          {u:0, v:1, curvature: 45}, {u:0, v:1, curvature: -45}, // 2회 통과 이중선
+          {u:0, v:2}, {u:2, v:1}, {u:1, v:3}, {u:3, v:0}
+        ];
+      } else if (level === 17) {
+        title = "바다의 닻 (Anchor)";
+        nodes = [{id:0, x:270, y:70}, {id:1, x:270, y:160}, {id:2, x:270, y:300}, {id:3, x:140, y:240}, {id:4, x:400, y:240}, {id:5, x:190, y:160}, {id:6, x:350, y:160}];
+        edges = [
+          {u:0,v:5},{u:5,v:1},{u:1,v:6},{u:6,v:0},{u:0,v:1},
+          {u:1,v:2},{u:2,v:3, curvature:30},{u:3,v:1},{u:2,v:4, curvature:-30},{u:4,v:1}
+        ];
+      } else if (level === 18) {
+        title = "쌍돛단배 (Sailboat)";
+        nodes = [{id:0, x:150, y:280}, {id:1, x:390, y:280}, {id:2, x:350, y:330}, {id:3, x:190, y:330}, {id:4, x:270, y:280}, {id:5, x:270, y:80}, {id:6, x:170, y:220}, {id:7, x:370, y:220}];
+        edges = [
+          {u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},{u:0,v:4},{u:4,v:1},
+          {u:4,v:5},{u:5,v:6},{u:6,v:4},{u:5,v:7},{u:7,v:4}
+        ];
+      } else if (level === 19) {
+        title = "잠자리 날개 (Dragonfly)";
+        nodes = [{id:0, x:270, y:70}, {id:1, x:270, y:330}, {id:2, x:140, y:130}, {id:3, x:130, y:200}, {id:4, x:400, y:130}, {id:5, x:410, y:200}, {id:6, x:270, y:150}];
+        edges = [
+          {u:0,v:6},{u:6,v:1},
+          {u:0,v:2},{u:2,v:6},{u:6,v:3},{u:3,v:1},
+          {u:0,v:4},{u:4,v:6},{u:6,v:5},{u:5,v:1},
+          {u:2,v:3},{u:4,v:5}
+        ];
+      } else if (level === 20) {
+        title = "오일러 마스터 게이트";
+        nodes = [
+          {id:0, x:160, y:100}, {id:1, x:380, y:100}, {id:2, x:440, y:200},
+          {id:3, x:380, y:300}, {id:4, x:160, y:300}, {id:5, x:100, y:200},
+          {id:6, x:270, y:200}
+        ];
+        edges = [
+          {u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:4},{u:4,v:5},{u:5,v:0},
+          {u:0,v:6, isKey:true},{u:1,v:6},{u:2,v:6, type:1},{u:3,v:6},{u:4,v:6, type:3},{u:5,v:6},
+          {u:0,v:3, curvature:40},{u:1,v:4, curvature:-40}
+        ];
+      }
+      // 21~40: 사물/기하 테마 (우산, 열쇠, 트로피, 안경, 가위, 활, 검 등)
+      else if (level <= 40) {
+        const sub = level - 20;
+        const R = 120;
+        const N = 4 + (sub % 5);
+        title = `기하 아티팩트 #${sub} (Lv.${level})`;
+        for (let k = 0; k < N; k++) {
+          const ang = -Math.PI/2 + (k * 2 * Math.PI / N);
+          nodes.push({ id: k, x: Math.round(cx + R * Math.cos(ang)), y: Math.round(cy + R * Math.sin(ang)) });
         }
-      } else if (level <= 60) {
-        const N = 5 + (level % 5);
-        const R = 135;
-        title = `휠 네트워크 ${N}포크 (Lv.${level})`;
-        nodes.push({id:0, x:cx, y:cy});
-        for(let k=1; k<=N; k++){
-          const ang = -Math.PI/2 + ((k-1)*2*Math.PI/N);
-          nodes.push({id:k, x: Math.round(cx + R*Math.cos(ang)), y: Math.round(cy + R*Math.sin(ang))});
+        nodes.push({ id: N, x: cx, y: cy }); // 중앙 코어
+
+        for (let k = 0; k < N; k++) {
+          edges.push({ u: k, v: (k+1)%N, curvature: (k%2===0 ? 25 : -25) });
+          edges.push({ u: k, v: N, type: (k===0 && sub%3===0 ? 1 : 0), isKey: (k===1 && sub%2===0) });
         }
-        for(let k=1; k<=N; k++){
-          const next = (k % N) + 1;
-          edges.push({u:k, v:next, curvature: (level%2===0 && k%2===0 ? 25 : 0)});
-        }
-        for(let k=1; k<=N; k+=2){
-          edges.push({u:0, v:k, isKey: (k===1 && level%3===0)});
-          const opp = ((k + Math.floor(N/2)) % N) + 1;
-          edges.push({u:0, v:opp});
-        }
-      } else {
-        const N = 6 + (level % 4);
+      }
+      // 41~60: 자연 & 우주 (태양, 토성 고리, 은하 나선, 눈 결정, 혜성 등)
+      else if (level <= 60) {
+        const sub = level - 40;
+        title = `코스모스 스타 #${sub} (Lv.${level})`;
+        const N = 6 + (sub % 4);
         const R_out = 135;
-        const R_in = 70;
-        title = `이중 회로 네트워크 (Lv.${level})`;
-        for(let k=0; k<N; k++){
-          const ang = -Math.PI/2 + (k*2*Math.PI/N);
-          nodes.push({id:k, x: Math.round(cx + R_out*Math.cos(ang)), y: Math.round(cy + R_out*Math.sin(ang))});
+        const R_in = 60;
+        for (let k = 0; k < N; k++) {
+          const ang = -Math.PI/2 + (k * 2 * Math.PI / N);
+          nodes.push({ id: k, x: Math.round(cx + R_out * Math.cos(ang)), y: Math.round(cy + R_out * Math.sin(ang)) });
+          nodes.push({ id: N+k, x: Math.round(cx + R_in * Math.cos(ang + Math.PI/N)), y: Math.round(cy + R_in * Math.sin(ang + Math.PI/N)) });
         }
-        for(let k=0; k<N; k++){
-          const ang = -Math.PI/2 + (k*2*Math.PI/N) + (Math.PI/N);
-          nodes.push({id:N+k, x: Math.round(cx + R_in*Math.cos(ang)), y: Math.round(cy + R_in*Math.sin(ang))});
+        for (let k = 0; k < N; k++) {
+          edges.push({ u: k, v: N+k, type: (k===0 ? 2 : 0) }); // 포털 기믹 포함
+          edges.push({ u: N+k, v: (k+1)%N });
+          edges.push({ u: k, v: (k+1)%N, curvature: (k%2===0 ? 30 : -30) });
         }
-        for(let k=0; k<N; k++){
-          edges.push({u:k, v:(k+1)%N, curvature: (k%2===0 ? 20 : -20)});
+      }
+      // 61~80: 건축 & 타워 (에펠탑, 현수교, 피라미드 복합체, 대관람차 등)
+      else if (level <= 80) {
+        const sub = level - 60;
+        title = `메가 스트럭처 #${sub} (Lv.${level})`;
+        nodes = [
+          {id:0, x:270, y:60},
+          {id:1, x:220, y:140}, {id:2, x:320, y:140},
+          {id:3, x:170, y:230}, {id:4, x:370, y:230},
+          {id:5, x:120, y:320}, {id:6, x:270, y:320}, {id:7, x:420, y:320}
+        ];
+        edges = [
+          {u:0,v:1},{u:0,v:2},{u:1,v:2},
+          {u:1,v:3},{u:2,v:4},{u:3,v:4},{u:1,v:4},{u:2,v:3},
+          {u:3,v:5},{u:4,v:7},{u:5,v:6},{u:6,v:7},{u:3,v:6},{u:4,v:6},
+          {u:5,v:7, curvature: 45, isKey: true}
+        ];
+      }
+      // 81~100: 프랙탈 & 4D 테서랙트 입체 투영
+      else {
+        const sub = level - 80;
+        title = `하이퍼 큐브 4D #${sub} (Lv.${level})`;
+        const R_out = 140;
+        const R_mid = 85;
+        const R_in = 35;
+        for (let k = 0; k < 4; k++) {
+          const ang = -Math.PI/4 + (k * Math.PI / 2);
+          nodes.push({ id: k, x: Math.round(cx + R_out * Math.cos(ang)), y: Math.round(cy + R_out * Math.sin(ang)) });
+          nodes.push({ id: 4+k, x: Math.round(cx + R_mid * Math.cos(ang)), y: Math.round(cy + R_mid * Math.sin(ang)) });
+          nodes.push({ id: 8+k, x: Math.round(cx + R_in * Math.cos(ang)), y: Math.round(cy + R_in * Math.sin(ang)) });
         }
-        for(let k=0; k<N; k++){
-          edges.push({u:N+k, v:N+((k+1)%N), curvature: 0});
-        }
-        for(let k=0; k<N; k++){
-          edges.push({u:k, v: N+k, isKey: (k===0 && level%2===0)});
-          edges.push({u:(k+1)%N, v: N+k});
+        for (let k = 0; k < 4; k++) {
+          const next = (k+1)%4;
+          edges.push({ u: k, v: next });
+          edges.push({ u: 4+k, v: 4+next });
+          edges.push({ u: 8+k, v: 8+next });
+          edges.push({ u: k, v: 4+k });
+          edges.push({ u: 4+k, v: 8+k, type: (k===0 ? 1 : 0) });
         }
       }
 
@@ -694,7 +815,7 @@
     }
 
     for (let i = 1; i <= 100; i++) {
-      stages.push(buildUniqueStage(i));
+      stages.push(buildDiverseStage(i));
     }
 
     const canvas = document.getElementById('gameCanvas');
@@ -809,7 +930,8 @@
 
       resetStroke();
       const stage = stages[currentStageIndex];
-      uiTotal.innerText = stage.edges.length;
+      const regularEdges = stage.edges.filter(e => e.type !== 2);
+      uiTotal.innerText = regularEdges.length;
       btnNext.style.display = 'none';
       btnPrev.disabled = (currentStageIndex === 0);
 
@@ -828,8 +950,17 @@
         uiMsg.innerText = failMsg;
         uiMsg.style.color = "#f87171";
       } else {
-        const hasKey = stages[currentStageIndex].edges.some(e => e.isKey);
-        uiMsg.innerText = hasKey ? "⭐ 황금 필수 다리를 반드시 지나서 완성하세요!" : "꼭짓점을 꾹 누르고 손을 떼지 않은 채 모든 선을 그리세요!";
+        const stage = stages[currentStageIndex];
+        const hasKey = stage.edges.some(e => e.isKey);
+        const hasWarp = stage.edges.some(e => e.type === 2);
+        const hasIce = stage.edges.some(e => e.type === 3);
+
+        let desc = "꼭짓점을 꾹 누르고 손을 떼지 않은 채 모든 선을 그리세요!";
+        if (hasKey) desc = "⭐ 황금 필수 다리를 반드시 지나서 완성하세요!";
+        else if (hasWarp) desc = "🌀 보라색 점선 포털을 타고 순간이동해보세요!";
+        else if (hasIce) desc = "❄️ 하늘색 얼음 다리는 건너면 깨져 사라집니다!";
+
+        uiMsg.innerText = desc;
         uiMsg.style.color = hasKey ? "#facc15" : "#94a3b8";
       }
       render();
@@ -837,7 +968,9 @@
 
     function updateUI() {
       const stage = stages[currentStageIndex];
-      uiRemaining.innerText = stage.edges.length - visitedEdges.length;
+      const regularEdges = stage.edges.filter(e => e.type !== 2);
+      const visitedRegular = visitedEdges.filter(idx => stage.edges[idx].type !== 2);
+      uiRemaining.innerText = regularEdges.length - visitedRegular.length;
     }
 
     function getPos(e) {
@@ -854,7 +987,7 @@
 
     function getNodeDegree(nodeId) {
       const stage = stages[currentStageIndex];
-      return stage.edges.filter(e => e.u === nodeId || e.v === nodeId).length;
+      return stage.edges.filter(e => (e.u === nodeId || e.v === nodeId) && e.type !== 2).length;
     }
 
     function onStart(e) {
@@ -887,9 +1020,14 @@
         const candidateIndices = [];
         stage.edges.forEach((edge, idx) => {
           if (visitedEdges.includes(idx)) return;
-          if ((edge.u === currentNode.id && edge.v === targetNode.id) ||
-              (edge.v === currentNode.id && edge.u === targetNode.id)) {
-            candidateIndices.push(idx);
+
+          if (edge.type === 1) { // 일방통행
+            if (edge.u === currentNode.id && edge.v === targetNode.id) candidateIndices.push(idx);
+          } else {
+            if ((edge.u === currentNode.id && edge.v === targetNode.id) ||
+                (edge.v === currentNode.id && edge.u === targetNode.id)) {
+              candidateIndices.push(idx);
+            }
           }
         });
 
@@ -923,15 +1061,17 @@
           visitedEdges.push(chosenIndex);
           currentNode = targetNode;
           
-          if (crossedEdge.isKey) {
-            soundKeyPassed();
-          } else {
-            soundPass(visitedEdges.length);
-          }
+          if (crossedEdge.isKey) soundKeyPassed();
+          else if (crossedEdge.type === 2) soundWarp();
+          else if (crossedEdge.type === 3) soundIceCrack();
+          else soundPass(visitedEdges.length);
           
           updateUI();
 
-          if (visitedEdges.length === stage.edges.length) {
+          const regularEdges = stage.edges.filter(e => e.type !== 2);
+          const visitedRegular = visitedEdges.filter(idx => stage.edges[idx].type !== 2);
+
+          if (visitedRegular.length === regularEdges.length) {
             const hasMissedKey = stage.edges.some((e, idx) => e.isKey && !visitedEdges.includes(idx));
             
             if (hasMissedKey) {
@@ -1001,9 +1141,6 @@
       render();
     });
 
-    // =========================================================================
-    // 🚀 [최종 제출: 최고 스테이지 + 성공한 모든 스테이지 목록 전송]
-    // =========================================================================
     let pendingSubmissionData = null;
 
     btnSubmitSheet.addEventListener('click', () => {
@@ -1019,7 +1156,7 @@
 
       const maxStage = Math.max(...clearedIds);
       const clearCount = clearedIds.length;
-      const clearedListStr = clearedIds.join(", "); // 성공한 모든 스테이지 번호 (예: "1, 2, 3, 5")
+      const clearedListStr = clearedIds.join(", ");
       const totalSeconds = clearedIds.reduce((sum, id) => sum + stageRecords[id].timeSeconds, 0);
       const totalFormatted = formatTime(totalSeconds);
 
@@ -1028,7 +1165,7 @@
         studentName: currentStudent.name,
         maxStage: `Lv.${maxStage}`,
         clearCount: `${clearCount} / 100`,
-        clearedList: clearedListStr, // 스프레드시트로 전달될 성공 목록
+        clearedList: clearedListStr,
         totalSeconds: totalSeconds,
         totalFormatted: totalFormatted
       };
@@ -1178,44 +1315,81 @@
       if (e.key === 'Enter') btnQuizSubmit.click();
     });
 
-    function drawEdge(u, v, curvature, isVisited, isKey) {
+    // --- 렌더링 파이프라인 ---
+    function drawEdge(u, v, curvature, isVisited, edge) {
       ctx.beginPath();
-      ctx.lineWidth = isVisited ? 6 : (isKey ? 5 : 3.5);
+      ctx.lineWidth = isVisited ? 6 : (edge.isKey ? 5 : 3.5);
       
       if (isVisited) {
         ctx.strokeStyle = '#38bdf8';
         ctx.shadowColor = '#38bdf8';
         ctx.shadowBlur = 8;
-      } else if (isKey) {
+        ctx.setLineDash([]);
+      } else if (edge.isKey) {
         ctx.strokeStyle = '#facc15';
         ctx.shadowColor = '#eab308';
         ctx.shadowBlur = 10;
+        ctx.setLineDash([]);
+      } else if (edge.type === 1) { // 일방통행
+        ctx.strokeStyle = '#fb923c';
+        ctx.shadowBlur = 0;
+        ctx.setLineDash([]);
+      } else if (edge.type === 2) { // 워프 포털
+        ctx.strokeStyle = '#c084fc';
+        ctx.shadowColor = '#a855f7';
+        ctx.shadowBlur = 6;
+        ctx.setLineDash([6, 6]);
+      } else if (edge.type === 3) { // 얼음 다리
+        ctx.strokeStyle = '#67e8f9';
+        ctx.shadowColor = '#22d3ee';
+        ctx.shadowBlur = 6;
+        ctx.setLineDash([]);
       } else {
         ctx.strokeStyle = '#334155';
         ctx.shadowBlur = 0;
+        ctx.setLineDash([]);
       }
       ctx.lineCap = 'round';
+
+      let midX = (u.x + v.x) / 2;
+      let midY = (u.y + v.y) / 2;
+      let ctrlX = midX, ctrlY = midY;
 
       if (!curvature) {
         ctx.moveTo(u.x, u.y);
         ctx.lineTo(v.x, v.y);
       } else {
-        const midX = (u.x + v.x) / 2;
-        const midY = (u.y + v.y) / 2;
         const dx = v.x - u.x;
         const dy = v.y - u.y;
         const len = Math.hypot(dx, dy);
         const nx = -dy / len;
         const ny = dx / len;
 
-        const ctrlX = midX + nx * curvature;
-        const ctrlY = midY + ny * curvature;
+        ctrlX = midX + nx * curvature;
+        ctrlY = midY + ny * curvature;
 
         ctx.moveTo(u.x, u.y);
         ctx.quadraticCurveTo(ctrlX, ctrlY, v.x, v.y);
       }
       ctx.stroke();
+      ctx.setLineDash([]);
       ctx.shadowBlur = 0;
+
+      // 일방통행 화살표 표시
+      if (edge.type === 1 && !isVisited) {
+        const arrowX = curvature ? (u.x + 2 * ctrlX + v.x) / 4 : midX;
+        const arrowY = curvature ? (u.y + 2 * ctrlY + v.y) / 4 : midY;
+        const angle = Math.atan2(v.y - u.y, v.x - u.x);
+
+        ctx.save();
+        ctx.translate(arrowX, arrowY);
+        ctx.rotate(angle);
+        ctx.fillStyle = '#fb923c';
+        ctx.beginPath();
+        ctx.moveTo(8, 0); ctx.lineTo(-6, -6); ctx.lineTo(-6, 6);
+        ctx.fill();
+        ctx.restore();
+      }
     }
 
     function render() {
@@ -1224,13 +1398,13 @@
 
       stage.edges.forEach((edge, idx) => {
         if (!visitedEdges.includes(idx)) {
-          drawEdge(stage.nodes[edge.u], stage.nodes[edge.v], edge.curvature, false, edge.isKey);
+          drawEdge(stage.nodes[edge.u], stage.nodes[edge.v], edge.curvature, false, edge);
         }
       });
 
       visitedEdges.forEach((edgeIdx) => {
         const edge = stage.edges[edgeIdx];
-        drawEdge(stage.nodes[edge.u], stage.nodes[edge.v], edge.curvature, true, false);
+        drawEdge(stage.nodes[edge.u], stage.nodes[edge.v], edge.curvature, true, edge);
       });
 
       if (isDrawing && currentNode) {
