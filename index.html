@@ -197,6 +197,11 @@
       border-color: #38bdf8;
       box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
     }
+    textarea.input-field {
+      resize: vertical;
+      min-height: 80px;
+      font-family: inherit;
+    }
     .modal-btns {
       display: flex;
       gap: 8px;
@@ -230,7 +235,7 @@
 </head>
 <body>
 
-  <!-- 학번 4자리 로그인 모달 -->
+  <!-- 1. 학번 4자리 로그인 모달 -->
   <div class="modal-overlay" id="login-modal">
     <div class="modal-box">
       <h3>👋 수학 탐구 대원 등록</h3>
@@ -276,7 +281,7 @@
     <button id="btn-next" style="display: none; background: #22c55e; color: white;">다음 스테이지 ▶</button>
   </div>
 
-  <!-- 퀴즈 모달 -->
+  <!-- 2. 퀴즈 모달 -->
   <div class="modal-overlay" id="quiz-modal" style="display: none;">
     <div class="modal-box">
       <h3>📐 힌트 해금 수학 퀴즈</h3>
@@ -289,7 +294,7 @@
     </div>
   </div>
 
-  <!-- 학습 기록 모달 -->
+  <!-- 3. 학습 기록 모달 -->
   <div class="modal-overlay" id="records-modal" style="display: none;">
     <div class="modal-box" style="max-width: 520px;">
       <h3>📊 한붓그리기 학습 리포트</h3>
@@ -313,6 +318,24 @@
       <div class="modal-btns">
         <button id="btn-export-csv" style="background: #10b981; color: white;">📥 CSV 다운로드</button>
         <button id="btn-records-close" class="secondary">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. 최종 제출 & 한마디 입력 모달 -->
+  <div class="modal-overlay" id="submit-modal" style="display: none;">
+    <div class="modal-box">
+      <h3>🚀 선생님께 최종 제출하기</h3>
+      <div id="submit-summary" style="background: #0f172a; padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.6; margin-bottom: 14px; border: 1px solid #334155;">
+        <!-- 요약 정보 렌더링 -->
+      </div>
+      <label style="display: block; font-size: 13px; color: #38bdf8; font-weight: bold; margin-bottom: 6px;">
+        💬 선생님께 남기는 한마디 (소감 / 질문 등)
+      </label>
+      <textarea id="submit-comment" class="input-field" placeholder="오늘 수업에서 느낀 점이나 질문을 자유롭게 적어보세요! (선택사항)"></textarea>
+      <div class="modal-btns">
+        <button id="btn-submit-cancel" class="secondary">취소</button>
+        <button id="btn-submit-confirm" class="submit-btn">제출 완료하기 ✨</button>
       </div>
     </div>
   </div>
@@ -478,7 +501,7 @@
     ];
 
     // =========================================================================
-    // 🌟 [노드 간섭 & 선 겹침 완벽 제거] 100개 스테이지 생성기
+    // 🌟 100개 스테이지 생성 엔진
     // =========================================================================
     const stages = [];
 
@@ -502,13 +525,12 @@
         if (d % 2 !== 0) oddNodes.push(idx);
       });
 
-      let curveToggle = 35;
+      let curveToggle = 45;
       while (oddNodes.length > 2) {
         const u = oddNodes.pop();
         const v = oddNodes.pop();
-        // 직선 대신 곡선으로 연결하여 중간 노드 간섭 방지
         edges.push({ u, v, curvature: curveToggle });
-        curveToggle = -curveToggle;
+        curveToggle = (curveToggle > 0) ? -(curveToggle + 10) : -(curveToggle - 10);
       }
 
       return edges;
@@ -534,8 +556,8 @@
         edges = [{u:0,v:1},{u:1,v:2},{u:2,v:0},{u:2,v:3},{u:3,v:4},{u:4,v:2}];
       } else if (level === 4) {
         title = "열린 편지봉투";
-        nodes = [{id:0, x:160, y:140}, {id:1, x:380, y:140}, {id:2, x:380, y:290}, {id:3, x:160, y:290}, {id:4, x:270, y:210}];
-        edges = [{u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},{u:0,v:4},{u:1,v:4},{u:2,v:4},{u:3,v:4},{u:0,v:1, curvature:-35}];
+        nodes = [{id:0, x:160, y:130}, {id:1, x:380, y:130}, {id:2, x:380, y:290}, {id:3, x:160, y:290}, {id:4, x:270, y:220}];
+        edges = [{u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},{u:0,v:4},{u:1,v:4},{u:2,v:4},{u:3,v:4}];
       } else if (level === 5) {
         title = "쌍둥이 다이아몬드";
         nodes = [{id:0, x:270, y:60}, {id:1, x:170, y:150}, {id:2, x:370, y:150}, {id:3, x:270, y:240}, {id:4, x:170, y:330}, {id:5, x:370, y:330}];
@@ -546,16 +568,23 @@
         edges = [
           {u:0, v:1}, {u:1, v:2}, {u:2, v:3}, {u:3, v:0},
           {u:0, v:4}, {u:1, v:4}, {u:2, v:4}, {u:3, v:4},
-          {u:0, v:2, curvature: 55} // 중앙(4번) 관통 방지 곡선 다리
+          {u:0, v:2, curvature: 55}
         ];
       } else if (level === 7) {
         title = "삼각 피라미드 타워";
-        nodes = [{id:0, x:270, y:70}, {id:1, x:200, y:180}, {id:2, x:340, y:180}, {id:3, x:130, y:300}, {id:4, x:270, y:300}, {id:5, x:410, y:300}];
-        edges = [{u:0,v:1},{u:0,v:2},{u:1,v:2},{u:1,v:3},{u:1,v:4},{u:2,v:4},{u:2,v:5},{u:3,v:4},{u:4,v:5},{u:3,v:5, curvature:40}];
+        nodes = [{id:0, x:270, y:60}, {id:1, x:200, y:160}, {id:2, x:340, y:160}, {id:3, x:130, y:300}, {id:4, x:270, y:270}, {id:5, x:410, y:300}];
+        edges = [
+          {u:0,v:1},{u:0,v:2},{u:1,v:2},{u:1,v:3},{u:1,v:4},{u:2,v:4},{u:2,v:5},{u:3,v:4},{u:4,v:5},
+          {u:3,v:5, curvature: 55}
+        ];
       } else if (level === 8) {
         title = "삼중 연결 삼각별";
-        nodes = [{id:0, x:270, y:60}, {id:1, x:380, y:270}, {id:2, x:160, y:270}, {id:3, x:270, y:160}, {id:4, x:320, y:240}, {id:5, x:220, y:240}];
-        edges = [{u:0,v:1},{u:1,v:2},{u:2,v:0},{u:3,v:4},{u:4,v:5},{u:5,v:3},{u:0,v:3},{u:1,v:4},{u:2,v:5},{u:0,v:4, curvature:25},{u:1,v:5, curvature:25}];
+        nodes = [{id:0, x:270, y:60}, {id:1, x:380, y:270}, {id:2, x:160, y:270}, {id:3, x:270, y:150}, {id:4, x:330, y:230}, {id:5, x:210, y:230}];
+        edges = [
+          {u:0,v:1},{u:1,v:2},{u:2,v:0},{u:3,v:4},{u:4,v:5},{u:5,v:3},
+          {u:0,v:3},{u:1,v:4},{u:2,v:5},
+          {u:0,v:4, curvature:30},{u:1,v:5, curvature:30}
+        ];
       } else if (level === 9) {
         title = "황금 오각별";
         const R = 110;
@@ -566,13 +595,17 @@
         edges = [{u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:4},{u:4,v:0},{u:0,v:2, isKey: true},{u:2,v:4},{u:4,v:1},{u:1,v:3},{u:3,v:0}];
       } else if (level === 10) {
         title = "다중 브릿지 큐브";
-        nodes = [{id:0, x:180, y:100}, {id:1, x:360, y:100}, {id:2, x:360, y:280}, {id:3, x:180, y:280}, {id:4, x:220, y:140}, {id:5, x:320, y:140}, {id:6, x:320, y:240}, {id:7, x:220, y:240}];
+        nodes = [
+          {id:0, x:140, y:80},  {id:1, x:400, y:80},
+          {id:2, x:400, y:300}, {id:3, x:140, y:300},
+          {id:4, x:210, y:140}, {id:5, x:330, y:140},
+          {id:6, x:330, y:240}, {id:7, x:210, y:240}
+        ];
         edges = [
-          {u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},
-          {u:4,v:5},{u:5,v:6},{u:6,v:7},{u:7,v:4},
-          {u:0,v:4},{u:1,v:5},{u:2,v:6},{u:3,v:7},
-          {u:0,v:2, curvature: 55}, // 내부 노드 관통 방지 외곽 곡선
-          {u:1,v:3, curvature: 55}
+          {u:0, v:1}, {u:1, v:2}, {u:2, v:3}, {u:3, v:0},
+          {u:4, v:5}, {u:5, v:6}, {u:6, v:7}, {u:7, v:4},
+          {u:0, v:4}, {u:1, v:5}, {u:2, v:6}, {u:3, v:7},
+          {u:4, v:6}, {u:5, v:7}
         ];
       } else if (level <= 30) {
         const sub = level - 10;
@@ -583,7 +616,7 @@
         } else if (sub === 2) {
           title = "헤엄치는 금붕어";
           nodes = [{id:0, x:130, y:190}, {id:1, x:270, y:100}, {id:2, x:270, y:280}, {id:3, x:390, y:190}, {id:4, x:460, y:110}, {id:5, x:460, y:270}];
-          edges = [{u:0,v:1, curvature:-20},{u:0,v:2, curvature:20},{u:1,v:3, curvature:-20},{u:2,v:3, curvature:20},{u:1,v:2},{u:3,v:4},{u:4,v:5},{u:5,v:3},{u:1,v:4, curvature:30}];
+          edges = [{u:0,v:1, curvature:-20},{u:0,v:2, curvature:20},{u:1,v:3, curvature:-20},{u:2,v:3, curvature:20},{u:1,v:2},{u:3,v:4},{u:4,v:5},{u:5,v:3},{u:1,v:4, curvature:35}];
         } else if (sub === 3) {
           title = "나비의 날개짓";
           nodes = [{id:0, x:270, y:120}, {id:1, x:270, y:260}, {id:2, x:130, y:110}, {id:3, x:130, y:270}, {id:4, x:410, y:110}, {id:5, x:410, y:270}];
@@ -594,7 +627,7 @@
           edges = [{u:0,v:1},{u:1,v:2},{u:0,v:3, curvature:-40},{u:3,v:1, curvature:-40},{u:0,v:1, curvature:40},{u:1,v:4, curvature:-40},{u:4,v:2, curvature:-40},{u:1,v:2, curvature:40}];
         } else {
           const N = 4 + (sub % 4);
-          const R = 110;
+          const R = 115;
           for(let k=0; k<N; k++){
             const ang = -Math.PI/2 + (k*2*Math.PI/N);
             nodes.push({id:k, x: Math.round(cx + R*Math.cos(ang)), y: Math.round(cy + R*Math.sin(ang))});
@@ -608,7 +641,7 @@
         }
       } else if (level <= 60) {
         const N = 5 + (level % 5);
-        const R = 120;
+        const R = 135;
         title = `휠 네트워크 ${N}포크 (Lv.${level})`;
         nodes.push({id:0, x:cx, y:cy});
         for(let k=1; k<=N; k++){
@@ -626,8 +659,8 @@
         }
       } else {
         const N = 6 + (level % 4);
-        const R_out = 130;
-        const R_in = 65;
+        const R_out = 135;
+        const R_in = 70;
         title = `이중 회로 네트워크 (Lv.${level})`;
         for(let k=0; k<N; k++){
           const ang = -Math.PI/2 + (k*2*Math.PI/N);
@@ -691,6 +724,13 @@
     const quizAnswer = document.getElementById('quiz-answer');
     const btnQuizSubmit = document.getElementById('btn-quiz-submit');
     const btnQuizCancel = document.getElementById('btn-quiz-cancel');
+
+    // 최종 제출 모달 엘리먼트
+    const submitModal = document.getElementById('submit-modal');
+    const submitSummary = document.getElementById('submit-summary');
+    const submitComment = document.getElementById('submit-comment');
+    const btnSubmitCancel = document.getElementById('btn-submit-cancel');
+    const btnSubmitConfirm = document.getElementById('btn-submit-confirm');
 
     stages.forEach((st) => {
       const opt = document.createElement('option');
@@ -823,15 +863,43 @@
       if (targetNode && targetNode.id !== currentNode.id) {
         const stage = stages[currentStageIndex];
         
-        const edgeIndex = stage.edges.findIndex((edge, idx) => {
-          if (visitedEdges.includes(idx)) return false;
-          return (edge.u === currentNode.id && edge.v === targetNode.id) ||
-                 (edge.v === currentNode.id && edge.u === targetNode.id);
+        const candidateIndices = [];
+        stage.edges.forEach((edge, idx) => {
+          if (visitedEdges.includes(idx)) return;
+          if ((edge.u === currentNode.id && edge.v === targetNode.id) ||
+              (edge.v === currentNode.id && edge.u === targetNode.id)) {
+            candidateIndices.push(idx);
+          }
         });
 
-        if (edgeIndex !== -1) {
-          const crossedEdge = stage.edges[edgeIndex];
-          visitedEdges.push(edgeIndex);
+        if (candidateIndices.length > 0) {
+          let chosenIndex = candidateIndices[0];
+          if (candidateIndices.length > 1) {
+            let minDiff = Infinity;
+            candidateIndices.forEach(idx => {
+              const edge = stage.edges[idx];
+              const u = stage.nodes[edge.u];
+              const v = stage.nodes[edge.v];
+              const midX = (u.x + v.x) / 2;
+              const midY = (u.y + v.y) / 2;
+              const dx = v.x - u.x;
+              const dy = v.y - u.y;
+              const len = Math.hypot(dx, dy);
+              const nx = -dy / len;
+              const ny = dx / len;
+              const ctrlX = midX + nx * (edge.curvature || 0);
+              const ctrlY = midY + ny * (edge.curvature || 0);
+
+              const dist = Math.hypot(ctrlX - pointerPos.x, ctrlY - pointerPos.y);
+              if (dist < minDiff) {
+                minDiff = dist;
+                chosenIndex = idx;
+              }
+            });
+          }
+
+          const crossedEdge = stage.edges[chosenIndex];
+          visitedEdges.push(chosenIndex);
           currentNode = targetNode;
           
           if (crossedEdge.isKey) {
@@ -903,6 +971,11 @@
       render();
     });
 
+    // =========================================================================
+    // 🚀 [선생님께 최종 제출 + 한마디 모달 열기]
+    // =========================================================================
+    let pendingSubmissionData = null;
+
     btnSubmitSheet.addEventListener('click', () => {
       const clearedIds = Object.keys(stageRecords)
         .map(Number)
@@ -918,20 +991,7 @@
       const totalSeconds = clearedIds.reduce((sum, id) => sum + stageRecords[id].timeSeconds, 0);
       const totalFormatted = formatTime(totalSeconds);
 
-      const confirmMsg = `[최종 결과 제출 확인]\n\n` +
-        `• 학번: ${currentStudent.id}\n` +
-        `• 이름: ${currentStudent.name}\n` +
-        `• 최고 도달 스테이지: Lv.${maxStage}\n` +
-        `• 총 클리어 수: ${clearCount}개\n` +
-        `• 총 누적 소요시간: ${totalFormatted}\n\n` +
-        `선생님께 기록을 제출하시겠습니까?`;
-
-      if (!confirm(confirmMsg)) return;
-
-      btnSubmitSheet.disabled = true;
-      btnSubmitSheet.innerText = "제출 중... ⏳";
-
-      const payload = {
+      pendingSubmissionData = {
         studentId: currentStudent.id,
         studentName: currentStudent.name,
         maxStage: `Lv.${maxStage}`,
@@ -940,20 +1000,47 @@
         totalFormatted: totalFormatted
       };
 
+      submitSummary.innerHTML = `
+        <div>👤 <b>대원:</b> ${currentStudent.id} ${currentStudent.name}</div>
+        <div>🏆 <b>최고 도달:</b> Lv.${maxStage} (총 ${clearCount}개 클리어)</div>
+        <div>⏱️ <b>누적 시간:</b> ${totalFormatted}</div>
+      `;
+      submitComment.value = "";
+      submitModal.style.display = "flex";
+      submitComment.focus();
+    });
+
+    btnSubmitCancel.addEventListener('click', () => {
+      submitModal.style.display = "none";
+    });
+
+    btnSubmitConfirm.addEventListener('click', () => {
+      if (!pendingSubmissionData) return;
+
+      btnSubmitConfirm.disabled = true;
+      btnSubmitConfirm.innerText = "제출 전송 중... ⏳";
+
+      const finalPayload = {
+        ...pendingSubmissionData,
+        comment: submitComment.value.trim()
+      };
+
       fetch(GOOGLE_SHEET_WEBAPP_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(finalPayload)
       })
       .then(() => {
         alert("🎉 선생님께 성공적으로 제출되었습니다!");
-        btnSubmitSheet.innerText = "✅ 제출 완료";
+        submitModal.style.display = "none";
+        btnSubmitSheet.disabled = true;
+        btnSubmitSheet.innerText = "✅ 제출 완료됨";
       })
       .catch(err => {
         alert("전송 중 오류가 발생했습니다. 다시 시도해주세요.");
-        btnSubmitSheet.disabled = false;
-        btnSubmitSheet.innerText = "🚀 선생님께 최종 제출";
+        btnSubmitConfirm.disabled = false;
+        btnSubmitConfirm.innerText = "제출 완료하기 ✨";
       });
     });
 
