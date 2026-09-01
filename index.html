@@ -348,7 +348,7 @@
   <script>
     const GOOGLE_SHEET_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyU4fpwiJTUsuYGXdFM6tXTstOqVHXyCbKMvZYSVB9gPOFUYvEj_ylu0jh9vHbswMhUIQ/exec";
 
-    // --- 사운드 신디사이저 엔진 ---
+    // --- 오디오 신디사이저 ---
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
 
@@ -544,11 +544,7 @@
     ];
 
     // =========================================================================
-    // 🌟 [완전 리뉴얼] 100개 다채로운 테마 & 기믹 스테이지 엔진
-    // Edge properties:
-    // - type: 0(일반), 1(일방통행 u->v), 2(워프 포털: 선 소모 없음), 3(얼음 다리)
-    // - isKey: 황금 필수 다리
-    // - curvature: 곡선 휘어짐 정도
+    // 🌟 100개 다채로운 테마 & 기믹 스테이지 엔진
     // =========================================================================
     const stages = [];
 
@@ -563,7 +559,7 @@
     function validateAndFixEulerian(nodes, edges) {
       const degrees = new Array(nodes.length).fill(0);
       edges.forEach(e => {
-        if (e.type !== 2) { // 워프 포털은 차수 계산 제외
+        if (e.type !== 2) {
           degrees[e.u]++;
           degrees[e.v]++;
         }
@@ -591,7 +587,6 @@
       let nodes = [];
       let edges = [];
 
-      // 1~20: 동물 및 기초 형상 (나비, 박쥐, 거미줄, 물고기, 게 등)
       if (level === 1) {
         title = "기본 삼각형";
         nodes = [{id:0, x:270, y:80}, {id:1, x:160, y:290}, {id:2, x:380, y:290}];
@@ -670,9 +665,9 @@
         title = "일방통행 급류 협곡";
         nodes = [{id:0, x:150, y:190}, {id:1, x:270, y:90}, {id:2, x:390, y:190}, {id:3, x:270, y:290}];
         edges = [
-          {u:0, v:1, type: 1}, // 일방통행
+          {u:0, v:1, type: 1},
           {u:1, v:2},
-          {u:2, v:3, type: 1}, // 일방통행
+          {u:2, v:3, type: 1},
           {u:3, v:0},
           {u:1, v:3}
         ];
@@ -681,7 +676,7 @@
         nodes = [{id:0, x:130, y:120}, {id:1, x:230, y:120}, {id:2, x:180, y:230}, {id:3, x:360, y:150}, {id:4, x:460, y:250}, {id:5, x:320, y:290}];
         edges = [
           {u:0, v:1}, {u:1, v:2}, {u:2, v:0},
-          {u:2, v:3, type: 2}, // 워프 포털
+          {u:2, v:3, type: 2},
           {u:3, v:4}, {u:4, v:5}, {u:5, v:3}
         ];
       } else if (level === 15) {
@@ -689,14 +684,14 @@
         nodes = [{id:0, x:160, y:120}, {id:1, x:380, y:120}, {id:2, x:380, y:270}, {id:3, x:160, y:270}, {id:4, x:270, y:190}];
         edges = [
           {u:0, v:1}, {u:1, v:2}, {u:2, v:3}, {u:3, v:0},
-          {u:0, v:4, type: 3}, // 얼음 다리
+          {u:0, v:4, type: 3},
           {u:1, v:4}, {u:2, v:4}, {u:3, v:4, type: 3}
         ];
       } else if (level === 16) {
         title = "이중 나선 더블 루프";
         nodes = [{id:0, x:180, y:190}, {id:1, x:360, y:190}, {id:2, x:270, y:80}, {id:3, x:270, y:300}];
         edges = [
-          {u:0, v:1, curvature: 45}, {u:0, v:1, curvature: -45}, // 2회 통과 이중선
+          {u:0, v:1, curvature: 45}, {u:0, v:1, curvature: -45},
           {u:0, v:2}, {u:2, v:1}, {u:1, v:3}, {u:3, v:0}
         ];
       } else if (level === 17) {
@@ -734,9 +729,7 @@
           {u:0,v:6, isKey:true},{u:1,v:6},{u:2,v:6, type:1},{u:3,v:6},{u:4,v:6, type:3},{u:5,v:6},
           {u:0,v:3, curvature:40},{u:1,v:4, curvature:-40}
         ];
-      }
-      // 21~40: 사물/기하 테마 (우산, 열쇠, 트로피, 안경, 가위, 활, 검 등)
-      else if (level <= 40) {
+      } else if (level <= 40) {
         const sub = level - 20;
         const R = 120;
         const N = 4 + (sub % 5);
@@ -745,15 +738,13 @@
           const ang = -Math.PI/2 + (k * 2 * Math.PI / N);
           nodes.push({ id: k, x: Math.round(cx + R * Math.cos(ang)), y: Math.round(cy + R * Math.sin(ang)) });
         }
-        nodes.push({ id: N, x: cx, y: cy }); // 중앙 코어
+        nodes.push({ id: N, x: cx, y: cy });
 
         for (let k = 0; k < N; k++) {
           edges.push({ u: k, v: (k+1)%N, curvature: (k%2===0 ? 25 : -25) });
           edges.push({ u: k, v: N, type: (k===0 && sub%3===0 ? 1 : 0), isKey: (k===1 && sub%2===0) });
         }
-      }
-      // 41~60: 자연 & 우주 (태양, 토성 고리, 은하 나선, 눈 결정, 혜성 등)
-      else if (level <= 60) {
+      } else if (level <= 60) {
         const sub = level - 40;
         title = `코스모스 스타 #${sub} (Lv.${level})`;
         const N = 6 + (sub % 4);
@@ -765,13 +756,11 @@
           nodes.push({ id: N+k, x: Math.round(cx + R_in * Math.cos(ang + Math.PI/N)), y: Math.round(cy + R_in * Math.sin(ang + Math.PI/N)) });
         }
         for (let k = 0; k < N; k++) {
-          edges.push({ u: k, v: N+k, type: (k===0 ? 2 : 0) }); // 포털 기믹 포함
+          edges.push({ u: k, v: N+k, type: (k===0 ? 2 : 0) });
           edges.push({ u: N+k, v: (k+1)%N });
           edges.push({ u: k, v: (k+1)%N, curvature: (k%2===0 ? 30 : -30) });
         }
-      }
-      // 61~80: 건축 & 타워 (에펠탑, 현수교, 피라미드 복합체, 대관람차 등)
-      else if (level <= 80) {
+      } else if (level <= 80) {
         const sub = level - 60;
         title = `메가 스트럭처 #${sub} (Lv.${level})`;
         nodes = [
@@ -786,9 +775,7 @@
           {u:3,v:5},{u:4,v:7},{u:5,v:6},{u:6,v:7},{u:3,v:6},{u:4,v:6},
           {u:5,v:7, curvature: 45, isKey: true}
         ];
-      }
-      // 81~100: 프랙탈 & 4D 테서랙트 입체 투영
-      else {
+      } else {
         const sub = level - 80;
         title = `하이퍼 큐브 4D #${sub} (Lv.${level})`;
         const R_out = 140;
@@ -1021,7 +1008,7 @@
         stage.edges.forEach((edge, idx) => {
           if (visitedEdges.includes(idx)) return;
 
-          if (edge.type === 1) { // 일방통행
+          if (edge.type === 1) {
             if (edge.u === currentNode.id && edge.v === targetNode.id) candidateIndices.push(idx);
           } else {
             if ((edge.u === currentNode.id && edge.v === targetNode.id) ||
@@ -1141,6 +1128,9 @@
       render();
     });
 
+    // =========================================================================
+    // 🚀 [최종 제출: 8개 열 구조 통일 전송]
+    // =========================================================================
     let pendingSubmissionData = null;
 
     btnSubmitSheet.addEventListener('click', () => {
@@ -1166,7 +1156,6 @@
         maxStage: `Lv.${maxStage}`,
         clearCount: `${clearCount} / 100`,
         clearedList: clearedListStr,
-        totalSeconds: totalSeconds,
         totalFormatted: totalFormatted
       };
 
@@ -1174,7 +1163,7 @@
         <div>👤 <b>대원:</b> ${currentStudent.id} ${currentStudent.name}</div>
         <div>🏆 <b>최종 도달:</b> Lv.${maxStage} (총 ${clearCount}개 클리어)</div>
         <div>📋 <b>성공 스테이지:</b> Lv. ${clearedListStr}</div>
-        <div>⏱️ <b>누적 소요시간:</b> ${totalFormatted}</div>
+        <div>⏱️ <b>총 소요시간:</b> ${totalFormatted}</div>
       `;
       submitComment.value = "";
       submitModal.style.display = "flex";
@@ -1192,7 +1181,12 @@
       btnSubmitConfirm.innerText = "제출 전송 중... ⏳";
 
       const finalPayload = {
-        ...pendingSubmissionData,
+        studentId: currentStudent.id,
+        studentName: currentStudent.name,
+        maxStage: pendingSubmissionData.maxStage,
+        clearCount: pendingSubmissionData.clearCount,
+        clearedList: pendingSubmissionData.clearedList,
+        totalFormatted: pendingSubmissionData.totalFormatted,
         comment: submitComment.value.trim()
       };
 
@@ -1249,16 +1243,15 @@
 
     btnExportCsv.addEventListener('click', () => {
       let csvContent = "\uFEFF";
-      csvContent += "학번,이름,스테이지,난이도,성공여부,소요시간(초),소요시간(분초)\n";
+      csvContent += "학번,이름,스테이지,난이도,성공여부,소요시간\n";
 
       stages.forEach((st) => {
         const rec = stageRecords[st.id];
         const isClr = rec && rec.cleared ? "완료" : "미완료";
-        const sec = rec && rec.cleared ? rec.timeSeconds : "";
         const formatted = rec && rec.cleared ? formatTime(rec.timeSeconds) : "";
         const diff = getDiffInfo(st.id).name;
 
-        csvContent += `"${currentStudent.id}","${currentStudent.name}",${st.id},"${diff}","${isClr}",${sec},"${formatted}"\n`;
+        csvContent += `"${currentStudent.id}","${currentStudent.name}",${st.id},"${diff}","${isClr}","${formatted}"\n`;
       });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -1315,7 +1308,6 @@
       if (e.key === 'Enter') btnQuizSubmit.click();
     });
 
-    // --- 렌더링 파이프라인 ---
     function drawEdge(u, v, curvature, isVisited, edge) {
       ctx.beginPath();
       ctx.lineWidth = isVisited ? 6 : (edge.isKey ? 5 : 3.5);
@@ -1330,16 +1322,16 @@
         ctx.shadowColor = '#eab308';
         ctx.shadowBlur = 10;
         ctx.setLineDash([]);
-      } else if (edge.type === 1) { // 일방통행
+      } else if (edge.type === 1) {
         ctx.strokeStyle = '#fb923c';
         ctx.shadowBlur = 0;
         ctx.setLineDash([]);
-      } else if (edge.type === 2) { // 워프 포털
+      } else if (edge.type === 2) {
         ctx.strokeStyle = '#c084fc';
         ctx.shadowColor = '#a855f7';
         ctx.shadowBlur = 6;
         ctx.setLineDash([6, 6]);
-      } else if (edge.type === 3) { // 얼음 다리
+      } else if (edge.type === 3) {
         ctx.strokeStyle = '#67e8f9';
         ctx.shadowColor = '#22d3ee';
         ctx.shadowBlur = 6;
@@ -1375,7 +1367,6 @@
       ctx.setLineDash([]);
       ctx.shadowBlur = 0;
 
-      // 일방통행 화살표 표시
       if (edge.type === 1 && !isVisited) {
         const arrowX = curvature ? (u.x + 2 * ctrlX + v.x) / 4 : midX;
         const arrowY = curvature ? (u.y + 2 * ctrlY + v.y) / 4 : midY;
