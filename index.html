@@ -320,29 +320,20 @@
   <script>
     const GOOGLE_SHEET_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyU4fpwiJTUsuYGXdFM6tXTstOqVHXyCbKMvZYSVB9gPOFUYvEj_ylu0jh9vHbswMhUIQ/exec";
 
-    // =========================================================================
-    // 🔊 [오디오 신디사이저 엔진 강화]
-    // =========================================================================
+    // --- 오디오 신디사이저 엔진 ---
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
 
     function getAudioContext() {
-      if (!audioCtx) {
-        audioCtx = new AudioCtx();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
+      if (!audioCtx) audioCtx = new AudioCtx();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
       return audioCtx;
     }
 
-    // 1. 선 그을 때 "촥-! / 챱-!" 타격감 사운드 (콤보 피치 상승)
     function soundPass(step = 0) {
       try {
         const ctx = getAudioContext();
         const t = ctx.currentTime;
-
-        // [Tone 1: 브러시 마찰 스위프음]
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         const baseFreq = 400 + Math.min(step * 45, 600);
@@ -359,13 +350,10 @@
         osc.start(t);
         osc.stop(t + 0.08);
 
-        // [Tone 2: 촥! 하는 화이트 노이즈 찰나 합성]
         const bufferSize = ctx.sampleRate * 0.03;
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = Math.random() * 2 - 1;
-        }
+        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
 
         const noise = ctx.createBufferSource();
         noise.buffer = buffer;
@@ -382,26 +370,21 @@
         noise.connect(filter);
         filter.connect(noiseGain);
         noiseGain.connect(ctx.destination);
-
         noise.start(t);
       } catch (e) {}
     }
 
-    // 2. 황금 필수 다리 통과 "영롱한 크리스탈 벨"
     function soundKeyPassed() {
       try {
         const ctx = getAudioContext();
         const t = ctx.currentTime;
-        const freqs = [1046.5, 1318.5, 1567.98]; // C6, E6, G6
-
-        freqs.forEach((f, idx) => {
+        [1046.5, 1318.5, 1567.98].forEach((f, idx) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'sine';
           osc.frequency.setValueAtTime(f, t + idx * 0.04);
           gain.gain.setValueAtTime(0.15, t + idx * 0.04);
           gain.gain.exponentialRampToValueAtTime(0.0001, t + idx * 0.04 + 0.35);
-
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(t + idx * 0.04);
@@ -410,27 +393,21 @@
       } catch (e) {}
     }
 
-    // 3. 스테이지 클리어 "화려한 띠리링~ 팡파레 멜로디"
     function soundWin() {
       try {
         const ctx = getAudioContext();
         const t = ctx.currentTime;
-        // Do(523.25) -> Mi(659.25) -> Sol(783.99) -> Si(987.77) -> High Do(1046.50) -> Super High Mi(1318.51)
         const notes = [523.25, 659.25, 783.99, 987.77, 1046.50, 1318.51];
-
         notes.forEach((freq, i) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           const noteStart = t + i * 0.07;
           const isLast = (i >= notes.length - 2);
-
           osc.type = isLast ? 'triangle' : 'sine';
           osc.frequency.setValueAtTime(freq, noteStart);
-
           const dur = isLast ? 0.6 : 0.2;
           gain.gain.setValueAtTime(0.18, noteStart);
           gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + dur);
-
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(noteStart);
@@ -439,21 +416,17 @@
       } catch (e) {}
     }
 
-    // 4. 실패 / 손 뗌 ("땡/뿌우-")
     function soundFail() {
       try {
         const ctx = getAudioContext();
         const t = ctx.currentTime;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(220, t);
         osc.frequency.linearRampToValueAtTime(110, t + 0.25);
-
         gain.gain.setValueAtTime(0.2, t);
         gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
-
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(t);
@@ -504,7 +477,9 @@
       { q: "절댓값이 7인 양수는 무엇일까요?", a: "7" }
     ];
 
-    // --- 100개 한붓그리기 스테이지 생성 엔진 ---
+    // =========================================================================
+    // 🌟 [노드 간섭 & 선 겹침 완벽 제거] 100개 스테이지 생성기
+    // =========================================================================
     const stages = [];
 
     function getDiffInfo(stNum) {
@@ -527,10 +502,13 @@
         if (d % 2 !== 0) oddNodes.push(idx);
       });
 
+      let curveToggle = 35;
       while (oddNodes.length > 2) {
         const u = oddNodes.pop();
         const v = oddNodes.pop();
-        edges.push({ u, v, curvature: 0 });
+        // 직선 대신 곡선으로 연결하여 중간 노드 간섭 방지
+        edges.push({ u, v, curvature: curveToggle });
+        curveToggle = -curveToggle;
       }
 
       return edges;
@@ -557,23 +535,27 @@
       } else if (level === 4) {
         title = "열린 편지봉투";
         nodes = [{id:0, x:160, y:140}, {id:1, x:380, y:140}, {id:2, x:380, y:290}, {id:3, x:160, y:290}, {id:4, x:270, y:210}];
-        edges = [{u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},{u:0,v:4},{u:1,v:4},{u:2,v:4},{u:3,v:4},{u:0,v:1, curvature:-30}];
+        edges = [{u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},{u:0,v:4},{u:1,v:4},{u:2,v:4},{u:3,v:4},{u:0,v:1, curvature:-35}];
       } else if (level === 5) {
         title = "쌍둥이 다이아몬드";
         nodes = [{id:0, x:270, y:60}, {id:1, x:170, y:150}, {id:2, x:370, y:150}, {id:3, x:270, y:240}, {id:4, x:170, y:330}, {id:5, x:370, y:330}];
         edges = [{u:0,v:1},{u:0,v:2},{u:1,v:3},{u:2,v:3},{u:1,v:2},{u:3,v:4},{u:3,v:5},{u:4,v:5},{u:1,v:4},{u:2,v:5}];
       } else if (level === 6) {
         title = "바람개비 사각연";
-        nodes = [{id:0, x:270, y:70}, {id:1, x:400, y:190}, {id:2, x:270, y:310}, {id:3, x:140, y:190}, {id:4, x:270, y:190}];
-        edges = [{u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},{u:0,v:4},{u:1,v:4},{u:2,v:4},{u:3,v:4},{u:0,v:2}];
+        nodes = [{id:0, x:270, y:70}, {id:1, x:410, y:190}, {id:2, x:270, y:310}, {id:3, x:130, y:190}, {id:4, x:270, y:190}];
+        edges = [
+          {u:0, v:1}, {u:1, v:2}, {u:2, v:3}, {u:3, v:0},
+          {u:0, v:4}, {u:1, v:4}, {u:2, v:4}, {u:3, v:4},
+          {u:0, v:2, curvature: 55} // 중앙(4번) 관통 방지 곡선 다리
+        ];
       } else if (level === 7) {
         title = "삼각 피라미드 타워";
         nodes = [{id:0, x:270, y:70}, {id:1, x:200, y:180}, {id:2, x:340, y:180}, {id:3, x:130, y:300}, {id:4, x:270, y:300}, {id:5, x:410, y:300}];
-        edges = [{u:0,v:1},{u:0,v:2},{u:1,v:2},{u:1,v:3},{u:1,v:4},{u:2,v:4},{u:2,v:5},{u:3,v:4},{u:4,v:5},{u:3,v:5, curvature:35}];
+        edges = [{u:0,v:1},{u:0,v:2},{u:1,v:2},{u:1,v:3},{u:1,v:4},{u:2,v:4},{u:2,v:5},{u:3,v:4},{u:4,v:5},{u:3,v:5, curvature:40}];
       } else if (level === 8) {
         title = "삼중 연결 삼각별";
         nodes = [{id:0, x:270, y:60}, {id:1, x:380, y:270}, {id:2, x:160, y:270}, {id:3, x:270, y:160}, {id:4, x:320, y:240}, {id:5, x:220, y:240}];
-        edges = [{u:0,v:1},{u:1,v:2},{u:2,v:0},{u:3,v:4},{u:4,v:5},{u:5,v:3},{u:0,v:3},{u:1,v:4},{u:2,v:5},{u:0,v:4},{u:1,v:5}];
+        edges = [{u:0,v:1},{u:1,v:2},{u:2,v:0},{u:3,v:4},{u:4,v:5},{u:5,v:3},{u:0,v:3},{u:1,v:4},{u:2,v:5},{u:0,v:4, curvature:25},{u:1,v:5, curvature:25}];
       } else if (level === 9) {
         title = "황금 오각별";
         const R = 110;
@@ -585,7 +567,13 @@
       } else if (level === 10) {
         title = "다중 브릿지 큐브";
         nodes = [{id:0, x:180, y:100}, {id:1, x:360, y:100}, {id:2, x:360, y:280}, {id:3, x:180, y:280}, {id:4, x:220, y:140}, {id:5, x:320, y:140}, {id:6, x:320, y:240}, {id:7, x:220, y:240}];
-        edges = [{u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},{u:4,v:5},{u:5,v:6},{u:6,v:7},{u:7,v:4},{u:0,v:4},{u:1,v:5},{u:2,v:6},{u:3,v:7},{u:0,v:2},{u:1,v:3}];
+        edges = [
+          {u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},
+          {u:4,v:5},{u:5,v:6},{u:6,v:7},{u:7,v:4},
+          {u:0,v:4},{u:1,v:5},{u:2,v:6},{u:3,v:7},
+          {u:0,v:2, curvature: 55}, // 내부 노드 관통 방지 외곽 곡선
+          {u:1,v:3, curvature: 55}
+        ];
       } else if (level <= 30) {
         const sub = level - 10;
         if (sub === 1) {
@@ -595,7 +583,7 @@
         } else if (sub === 2) {
           title = "헤엄치는 금붕어";
           nodes = [{id:0, x:130, y:190}, {id:1, x:270, y:100}, {id:2, x:270, y:280}, {id:3, x:390, y:190}, {id:4, x:460, y:110}, {id:5, x:460, y:270}];
-          edges = [{u:0,v:1, curvature:-20},{u:0,v:2, curvature:20},{u:1,v:3, curvature:-20},{u:2,v:3, curvature:20},{u:1,v:2},{u:3,v:4},{u:4,v:5},{u:5,v:3},{u:1,v:4}];
+          edges = [{u:0,v:1, curvature:-20},{u:0,v:2, curvature:20},{u:1,v:3, curvature:-20},{u:2,v:3, curvature:20},{u:1,v:2},{u:3,v:4},{u:4,v:5},{u:5,v:3},{u:1,v:4, curvature:30}];
         } else if (sub === 3) {
           title = "나비의 날개짓";
           nodes = [{id:0, x:270, y:120}, {id:1, x:270, y:260}, {id:2, x:130, y:110}, {id:3, x:130, y:270}, {id:4, x:410, y:110}, {id:5, x:410, y:270}];
@@ -614,8 +602,8 @@
           title = `곡선 아치 다각형 ${N}호 (Lv.${level})`;
           for(let k=0; k<N; k++){
             const next = (k+1)%N;
-            edges.push({u:k, v:next, curvature: (k%2===0 ? 35 : -35)});
-            edges.push({u:k, v:next, curvature: 0});
+            edges.push({u:k, v:next, curvature: 35});
+            edges.push({u:k, v:next, curvature: -35});
           }
         }
       } else if (level <= 60) {
@@ -740,7 +728,6 @@
       displayStudent.innerText = `대원: ${sid} ${sname}`;
       loginModal.style.display = 'none';
 
-      // 첫 클릭 시 오디오 컨텍스트 활성화
       getAudioContext();
       initStage(0);
     }
