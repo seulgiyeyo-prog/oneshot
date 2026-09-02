@@ -22,7 +22,7 @@
     header { text-align: center; margin-bottom: 6px; }
     h1 {
       margin: 0 0 2px 0;
-      font-size: 22px;
+      font-size: 24px;
       color: #38bdf8;
       letter-spacing: -0.5px;
     }
@@ -36,32 +36,34 @@
     .top-panel {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       background: #1e293b;
-      padding: 6px 14px;
+      padding: 8px 18px;
       border-radius: 20px;
       border: 1px solid #334155;
-      margin-bottom: 8px;
-      font-size: 13px;
+      margin-bottom: 10px;
+      font-size: 14px;
       font-weight: 600;
       flex-wrap: wrap;
       justify-content: center;
+      max-width: 700px;
+      width: 100%;
     }
     select {
       background: #0f172a;
       color: #38bdf8;
       border: 1px solid #475569;
-      padding: 4px 8px;
+      padding: 5px 10px;
       border-radius: 6px;
       font-weight: bold;
-      font-size: 13px;
+      font-size: 14px;
       cursor: pointer;
       outline: none;
     }
     .badge { color: #facc15; }
     .student-badge {
       background: #334155;
-      padding: 2px 8px;
+      padding: 3px 10px;
       border-radius: 12px;
       color: #38bdf8;
       cursor: pointer;
@@ -73,10 +75,11 @@
     .timer-badge {
       background: #0f172a;
       border: 1px solid #38bdf8;
-      padding: 2px 8px;
+      padding: 3px 10px;
       border-radius: 12px;
       color: #4ade80;
       font-family: monospace;
+      font-size: 14px;
     }
     .game-board {
       position: relative;
@@ -85,25 +88,34 @@
       background: #111827;
       border: 2px solid #1f2937;
       overflow: hidden;
+      max-width: 100%;
     }
-    canvas { display: block; cursor: crosshair; touch-action: none; }
+    canvas { 
+      display: block; 
+      cursor: crosshair; 
+      touch-action: none;
+      max-width: 100%;
+      height: auto;
+    }
     .guide-text {
-      margin-top: 8px;
-      font-size: 13px;
+      margin-top: 10px;
+      font-size: 14px;
       font-weight: bold;
-      min-height: 20px;
+      min-height: 22px;
       text-align: center;
       color: #94a3b8;
+      max-width: 680px;
     }
     .controls {
-      margin-top: 10px;
+      margin-top: 12px;
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
       justify-content: center;
+      max-width: 700px;
     }
     button {
-      padding: 8px 16px;
+      padding: 9px 15px;
       font-size: 13px;
       font-weight: 600;
       border: none;
@@ -123,13 +135,15 @@
     }
     button.secondary { background: #334155; color: #f1f5f9; }
     button.secondary:hover { background: #475569; }
+    button.impossible-btn { background: #ef4444; color: white; }
+    button.impossible-btn:hover { background: #dc2626; }
     button.submit-btn { background: #10b981; color: white; font-weight: bold; }
     button.submit-btn:hover { background: #059669; }
     button.toggle-active { background: #8b5cf6; color: white; }
     .difficulty-tag {
-      padding: 2px 6px;
+      padding: 3px 8px;
       border-radius: 4px;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: bold;
     }
     .diff-1 { background: #15803d; color: #bbf7d0; }
@@ -197,7 +211,7 @@
       <h3>👋 수학 탐구 대원 등록</h3>
       <p style="font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 16px;">
         4자리 학번(예: 1105)과 이름을 입력하세요.<br>
-        <span style="color: #facc15;">⭐ 언제든 추가 클리어 후 여러 번 제출할 수 있습니다!</span>
+        <span style="color: #facc15;">⭐ 기존에 플레이했던 학번/이름을 적으면 기록이 자동 복원됩니다!</span>
       </p>
       <input type="text" id="input-student-id" class="input-field" maxlength="4" placeholder="4자리 학번 (예: 1105)" autocomplete="off">
       <input type="text" id="input-student-name" class="input-field" placeholder="이름 입력 (예: 홍길동)" autocomplete="off">
@@ -223,7 +237,7 @@
   </div>
 
   <div class="game-board">
-    <canvas id="gameCanvas" width="540" height="380"></canvas>
+    <canvas id="gameCanvas" width="680" height="500"></canvas>
   </div>
 
   <div class="guide-text" id="ui-msg">꼭짓점을 누르고 손을 떼지 않은 채 모든 선을 그리세요!</div>
@@ -232,6 +246,7 @@
     <button id="btn-prev" class="secondary">◀ 이전</button>
     <button id="btn-reset" class="secondary">🔄 다시 하기</button>
     <button id="btn-degree" class="secondary">🔍 차수 보기</button>
+    <button id="btn-impossible" class="impossible-btn">🚫 불가능 판정</button>
     <button id="btn-quiz-hint">💡 퀴즈 힌트</button>
     <button id="btn-view-records" style="background: #eab308; color: #0f172a;">📊 학습 기록</button>
     <button id="btn-submit-sheet" class="submit-btn">🚀 선생님께 제출하기</button>
@@ -265,6 +280,7 @@
             <tr>
               <th>스테이지</th>
               <th>난이도</th>
+              <th>유형</th>
               <th>상태</th>
               <th>소요 시간</th>
             </tr>
@@ -273,7 +289,7 @@
         </table>
       </div>
       <div class="modal-btns">
-        <button id="btn-reset-data" style="background: #ef4444; color: white; margin-right: auto;">⚠️ 기록 초기화</button>
+        <button id="btn-reset-data" style="background: #ef4444; color: white; margin-right: auto;">⚠️ 이 대원 기록 초기화</button>
         <button id="btn-export-csv" style="background: #10b981; color: white;">📥 CSV 다운로드</button>
         <button id="btn-records-close" class="secondary">닫기</button>
       </div>
@@ -413,41 +429,64 @@
     }
 
     // =========================================================================
-    // 💾 [localStorage 데이터 관리]
+    // 💾 [학번+이름별 멀티 프로필 localStorage 관리 엔진]
     // =========================================================================
-    const STORAGE_KEY = "euler_drawing_data_v1";
+    const ALL_USERS_KEY = "euler_drawing_all_users_v1";
+    const LAST_SESSION_KEY = "euler_drawing_last_session_v1";
 
     let currentStudent = { id: "", name: "" };
     let stageRecords = {};
     let unlockedMaxStage = 1;
     let currentStageIndex = 0;
 
-    function saveToStorage() {
+    function getAllUsersData() {
       try {
-        const data = {
+        const raw = localStorage.getItem(ALL_USERS_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function saveToStorage() {
+      if (!currentStudent.id || !currentStudent.name) return;
+      try {
+        const userKey = `${currentStudent.id}_${currentStudent.name}`;
+        const allUsers = getAllUsersData();
+
+        allUsers[userKey] = {
           student: currentStudent,
           stageRecords: stageRecords,
           unlockedMaxStage: unlockedMaxStage,
-          currentStageIndex: currentStageIndex
+          currentStageIndex: currentStageIndex,
+          updatedAt: Date.now()
         };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+        localStorage.setItem(ALL_USERS_KEY, JSON.stringify(allUsers));
+        localStorage.setItem(LAST_SESSION_KEY, userKey);
       } catch (e) {}
     }
 
-    function loadFromStorage() {
+    function loadUserData(sid, sname) {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed.student && parsed.student.id) {
-            currentStudent = parsed.student;
-            stageRecords = parsed.stageRecords || {};
-            unlockedMaxStage = parsed.unlockedMaxStage || 1;
-            currentStageIndex = parsed.currentStageIndex || 0;
-            return true;
-          }
+        const userKey = `${sid}_${sname}`;
+        const allUsers = getAllUsersData();
+
+        if (allUsers[userKey]) {
+          const data = allUsers[userKey];
+          currentStudent = data.student || { id: sid, name: sname };
+          stageRecords = data.stageRecords || {};
+          unlockedMaxStage = data.unlockedMaxStage || 1;
+          currentStageIndex = data.currentStageIndex || 0;
+          return true;
         }
       } catch (e) {}
+      
+      // 저장된 기록이 없는 신규 학생인 경우 초기화
+      currentStudent = { id: sid, name: sname };
+      stageRecords = {};
+      unlockedMaxStage = 1;
+      currentStageIndex = 0;
       return false;
     }
 
@@ -493,7 +532,7 @@
     ];
 
     // =========================================================================
-    // 🌟 [100% 클리어 검증 완료] 100개 스테이지 생성기
+    // 🌟 [확대된 캔버스 680x500 & 교육용 불가능 스테이지 설계]
     // =========================================================================
     const stages = [];
 
@@ -506,35 +545,45 @@
     }
 
     function buildDiverseStage(level) {
-      const cx = 270, cy = 190;
+      const cx = 340, cy = 250;
       let title = "";
       let nodes = [];
       let edges = [];
 
+      const isImpossibleStage = [7, 13, 21, 35, 49, 63, 77, 91].includes(level);
+
       if (level === 1) {
-        title = "기초 삼각형";
-        nodes = [{id:0,x:270,y:80},{id:1,x:150,y:290},{id:2,x:390,y:290}];
+        title = "기초 정삼각형";
+        nodes = [{id:0,x:340,y:100},{id:1,x:180,y:390},{id:2,x:500,y:390}];
         edges = [{u:0,v:1},{u:1,v:2},{u:2,v:0}];
       } else if (level === 2) {
         title = "오일러의 집";
-        nodes = [{id:0,x:170,y:290},{id:1,x:370,y:290},{id:2,x:370,y:170},{id:3,x:170,y:170},{id:4,x:270,y:80}];
+        nodes = [{id:0,x:200,y:390},{id:1,x:480,y:390},{id:2,x:480,y:230},{id:3,x:200,y:230},{id:4,x:340,y:100}];
         edges = [{u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},{u:0,v:2},{u:1,v:3},{u:3,v:4},{u:4,v:2}];
       } else if (level === 3) {
         title = "모래시계 리본";
-        nodes = [{id:0,x:160,y:100},{id:1,x:380,y:100},{id:2,x:270,y:190},{id:3,x:160,y:280},{id:4,x:380,y:280}];
+        nodes = [{id:0,x:200,y:120},{id:1,x:480,y:120},{id:2,x:340,y:250},{id:3,x:200,y:380},{id:4,x:480,y:380}];
         edges = [{u:0,v:1},{u:1,v:2},{u:2,v:0},{u:2,v:3},{u:3,v:4},{u:4,v:2}];
       } else if (level === 4) {
         title = "다이아몬드 크로스";
-        nodes = [{id:0,x:270,y:70},{id:1,x:400,y:190},{id:2,x:270,y:310},{id:3,x:140,y:190},{id:4,x:270,y:190}];
+        nodes = [{id:0,x:340,y:80},{id:1,x:520,y:250},{id:2,x:340,y:420},{id:3,x:160,y:250},{id:4,x:340,y:250}];
         edges = [{u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},{u:0,v:4},{u:1,v:4},{u:2,v:4},{u:3,v:4}];
       } else if (level === 5) {
-        title = "헤엄치는 금붕어";
-        nodes = [{id:0,x:120,y:190},{id:1,x:250,y:110},{id:2,x:250,y:270},{id:3,x:370,y:190},{id:4,x:450,y:110},{id:5,x:450,y:270}];
-        edges = [{u:0,v:1},{u:0,v:2},{u:1,v:3},{u:2,v:3},{u:1,v:2},{u:3,v:4},{u:4,v:5},{u:5,v:3},{u:1,v:4,curvature:30}];
+        title = "헤엄치는 대형 금붕어";
+        nodes = [{id:0,x:140,y:250},{id:1,x:300,y:140},{id:2,x:300,y:360},{id:3,x:460,y:250},{id:4,x:560,y:140},{id:5,x:560,y:360}];
+        edges = [{u:0,v:1},{u:0,v:2},{u:1,v:3},{u:2,v:3},{u:1,v:2},{u:3,v:4},{u:4,v:5},{u:5,v:3},{u:1,v:4,curvature:35}];
+      } else if (level === 7) {
+        title = "쾨니히스베르크의 7개 다리";
+        nodes = [{id:0,x:340,y:100},{id:1,x:180,y:250},{id:2,x:500,y:250},{id:3,x:340,y:400}];
+        edges = [
+          {u:0,v:1,curvature:-30},{u:0,v:1,curvature:30},
+          {u:0,v:2,curvature:-30},{u:0,v:2,curvature:30},
+          {u:1,v:3},{u:2,v:3},{u:1,v:2}
+        ];
       } else if (level <= 20) {
         const sides = 3 + (level - 5);
         title = `정${sides}각 성형망 (Lv.${level})`;
-        const R = 115;
+        const R = 160;
         for (let k = 0; k < sides; k++) {
           const a = -Math.PI / 2 + (k * 2 * Math.PI / sides);
           nodes.push({ id: k, x: Math.round(cx + R * Math.cos(a)), y: Math.round(cy + R * Math.sin(a)) });
@@ -547,8 +596,8 @@
         }
       } else if (level <= 40) {
         const spokes = 4 + (level - 20);
-        title = `${spokes}스포크 회전 바퀴 (Lv.${level})`;
-        const R = 115;
+        title = `${spokes}스포크 거대 회전 휠 (Lv.${level})`;
+        const R = 165;
         nodes.push({ id: 0, x: cx, y: cy });
         for (let k = 0; k < spokes; k++) {
           const a = -Math.PI / 2 + (k * 2 * Math.PI / spokes);
@@ -559,7 +608,7 @@
       } else if (level <= 60) {
         const N = 4 + ((level - 40) % 7);
         title = `${N}각 동심 사다리망 (Lv.${level})`;
-        const R1 = 55, R2 = 120;
+        const R1 = 75, R2 = 165;
         for (let k = 0; k < N; k++) {
           const a = -Math.PI / 2 + (k * 2 * Math.PI / N);
           nodes.push({ id: k, x: Math.round(cx + R1 * Math.cos(a)), y: Math.round(cy + R1 * Math.sin(a)) });
@@ -574,7 +623,7 @@
       } else if (level <= 80) {
         const sides = 4 + ((level - 60) % 6);
         title = `${sides}각 다면체 투영 격자 (Lv.${level})`;
-        const R1 = 50, R2 = 115;
+        const R1 = 70, R2 = 165;
         nodes.push({ id: 0, x: cx, y: cy });
         for (let k = 0; k < sides; k++) {
           const a = -Math.PI / 2 + (k * 2 * Math.PI / sides);
@@ -591,7 +640,7 @@
       } else {
         const pts = 7 + ((level - 80) % 7);
         title = `4D 차원 매트릭스 (Lv.${level})`;
-        const R = 115;
+        const R = 165;
         for (let k = 0; k < pts; k++) {
           const a = -Math.PI / 2 + (k * 2 * Math.PI / pts);
           nodes.push({ id: k, x: Math.round(cx + R * Math.cos(a)), y: Math.round(cy + R * Math.sin(a)) });
@@ -600,34 +649,40 @@
         for (let k = 0; k < pts; k++) {
           edges.push({ u: k, v: (k + 1) % pts });
           edges.push({ u: k, v: pts });
-          if (k % 2 === 0) edges.push({ u: k, v: (k + 2) % pts, curvature: 25 });
+          if (k % 2 === 0) edges.push({ u: k, v: (k + 2) % pts, curvature: 35 });
         }
       }
 
-      // 오일러 차수 정밀 보정
       let degrees = new Array(nodes.length).fill(0);
       edges.forEach(e => { degrees[e.u]++; degrees[e.v]++; });
 
       let oddNodes = [];
       degrees.forEach((d, idx) => { if (d % 2 !== 0) oddNodes.push(idx); });
 
-      let curveOffset = 30;
-      while (oddNodes.length > 2) {
-        const u = oddNodes.pop();
-        const v = oddNodes.pop();
-        edges.push({ u, v, curvature: curveOffset });
-        curveOffset = -curveOffset;
-      }
+      if (!isImpossibleStage) {
+        let curveOffset = 35;
+        while (oddNodes.length > 2) {
+          const u = oddNodes.pop();
+          const v = oddNodes.pop();
+          edges.push({ u, v, curvature: curveOffset });
+          curveOffset = -curveOffset;
+        }
 
-      if (oddNodes.length === 0 && nodes.length >= 2) {
-        edges.push({ u: 0, v: 1, curvature: 35 });
+        if (oddNodes.length === 0 && nodes.length >= 2) {
+          edges.push({ u: 0, v: 1, curvature: 40 });
+        }
+      } else {
+        if (oddNodes.length < 4 && nodes.length >= 4) {
+          edges.push({ u: 0, v: 2, curvature: 35 });
+          edges.push({ u: 1, v: 3, curvature: -35 });
+        }
       }
 
       if (level > 20 && level % 4 === 0 && edges.length > 3) {
         edges[edges.length - 1].isKey = true;
       }
 
-      return { id: level, title, nodes, edges };
+      return { id: level, title, nodes, edges, isImpossible: isImpossibleStage };
     }
 
     for (let i = 1; i <= 100; i++) {
@@ -645,6 +700,7 @@
     const btnPrev = document.getElementById('btn-prev');
     const btnReset = document.getElementById('btn-reset');
     const btnDegree = document.getElementById('btn-degree');
+    const btnImpossible = document.getElementById('btn-impossible');
     const btnQuizHint = document.getElementById('btn-quiz-hint');
     const btnViewRecords = document.getElementById('btn-view-records');
     const btnSubmitSheet = document.getElementById('btn-submit-sheet');
@@ -719,14 +775,21 @@
         return;
       }
 
-      currentStudent.id = sid;
-      currentStudent.name = sname;
+      // 학생 데이터 로드 (기존 클리어 기록 및 단계 복원)
+      const isExistingUser = loadUserData(sid, sname);
       displayStudent.innerText = `대원: ${sid} ${sname} (변경)`;
       loginModal.style.display = 'none';
 
       saveToStorage();
       getAudioContext();
       updateStageSelectOptions();
+
+      if (isExistingUser) {
+        const clearedNum = Object.keys(stageRecords).filter(k => stageRecords[k].cleared).length;
+        uiMsg.innerText = `👋 반가워요, ${sname} 대원! (이전 클리어: ${clearedNum}개 보존됨)`;
+        uiMsg.style.color = "#4ade80";
+      }
+
       initStage(currentStageIndex);
     }
 
@@ -739,12 +802,10 @@
     });
 
     displayStudent.addEventListener('click', () => {
-      if (confirm("대원(학번/이름)을 변경하시겠습니까?")) {
-        loginModal.style.display = 'flex';
-        inputStudentId.value = currentStudent.id;
-        inputStudentName.value = currentStudent.name;
-        inputStudentId.focus();
-      }
+      loginModal.style.display = 'flex';
+      inputStudentId.value = currentStudent.id || "";
+      inputStudentName.value = currentStudent.name || "";
+      inputStudentId.focus();
     });
 
     function initStage(idx) {
@@ -766,7 +827,10 @@
         .filter(n => getNodeDegree(n.id) % 2 !== 0)
         .map(n => n.id);
 
-      if (oddStarts.length === 2) {
+      if (oddStarts.length > 2) {
+        uiMsg.innerText = `❓ 홀수점이 ${oddStarts.length}개입니다! 한붓그리기가 가능할지, 불가능할지 판별해보세요!`;
+        uiMsg.style.color = "#f43f5e";
+      } else if (oddStarts.length === 2) {
         uiMsg.innerText = `💡 홀수점 번호 [${oddStarts.join(', ')}] 중 한 곳에서 출발해야 완성됩니다!`;
         uiMsg.style.color = "#facc15";
       } else {
@@ -795,7 +859,10 @@
           .filter(n => getNodeDegree(n.id) % 2 !== 0)
           .map(n => n.id);
 
-        if (oddStarts.length === 2) {
+        if (oddStarts.length > 2) {
+          uiMsg.innerText = `❓ 홀수점이 ${oddStarts.length}개입니다! 한붓그리기가 가능할지 판별해보세요!`;
+          uiMsg.style.color = "#f43f5e";
+        } else if (oddStarts.length === 2) {
           uiMsg.innerText = `💡 홀수점 번호 [${oddStarts.join(', ')}] 중 한 곳에서 출발해야 완성됩니다!`;
           uiMsg.style.color = "#facc15";
         } else {
@@ -813,14 +880,19 @@
 
     function getPos(e) {
       const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      return { x: clientX - rect.left, y: clientY - rect.top };
+      return { 
+        x: (clientX - rect.left) * scaleX, 
+        y: (clientY - rect.top) * scaleY 
+      };
     }
 
     function findNodeAt(x, y) {
       const stage = stages[currentStageIndex];
-      return stage.nodes.find(n => Math.hypot(n.x - x, n.y - y) <= 22);
+      return stage.nodes.find(n => Math.hypot(n.x - x, n.y - y) <= 26);
     }
 
     function getNodeDegree(nodeId) {
@@ -937,33 +1009,7 @@
               soundFail();
               resetStroke("❌ 필수 황금 다리를 건너지 않았습니다!");
             } else {
-              isCleared = true;
-              isDrawing = false;
-              stopTimer();
-              soundWin();
-
-              const curStageId = stage.id;
-              const formatted = formatTime(stageElapsedSeconds);
-
-              if (!stageRecords[curStageId] || stageElapsedSeconds < stageRecords[curStageId].timeSeconds) {
-                stageRecords[curStageId] = {
-                  cleared: true,
-                  timeSeconds: stageElapsedSeconds
-                };
-              }
-
-              if (curStageId === unlockedMaxStage && unlockedMaxStage < 100) {
-                unlockedMaxStage++;
-              }
-
-              saveToStorage();
-              updateStageSelectOptions();
-
-              uiMsg.innerText = `🎉 Stage ${stage.id} 성공! (기록: ${formatted})`;
-              uiMsg.style.color = "#4ade80";
-              if (currentStageIndex < stages.length - 1) {
-                btnNext.style.display = 'inline-block';
-              }
+              completeStage("그리기 완성");
             }
           }
         }
@@ -979,6 +1025,56 @@
         resetStroke("❌ 손을 뗐습니다! 한붓그리기는 도중에 손을 떼면 안 됩니다.");
       }
     }
+
+    function completeStage(modeText) {
+      const stage = stages[currentStageIndex];
+      isCleared = true;
+      isDrawing = false;
+      stopTimer();
+      soundWin();
+
+      const curStageId = stage.id;
+      const formatted = formatTime(stageElapsedSeconds);
+
+      if (!stageRecords[curStageId] || stageElapsedSeconds < stageRecords[curStageId].timeSeconds) {
+        stageRecords[curStageId] = {
+          cleared: true,
+          type: modeText,
+          timeSeconds: stageElapsedSeconds
+        };
+      }
+
+      if (curStageId === unlockedMaxStage && unlockedMaxStage < 100) {
+        unlockedMaxStage++;
+      }
+
+      saveToStorage();
+      updateStageSelectOptions();
+
+      uiMsg.innerText = `🎉 Stage ${stage.id} 성공! [${modeText}] (기록: ${formatted})`;
+      uiMsg.style.color = "#4ade80";
+      if (currentStageIndex < stages.length - 1) {
+        btnNext.style.display = 'inline-block';
+      }
+    }
+
+    btnImpossible.addEventListener('click', () => {
+      const stage = stages[currentStageIndex];
+      let oddCount = 0;
+      stage.nodes.forEach(n => {
+        if (getNodeDegree(n.id) % 2 !== 0) oddCount++;
+      });
+
+      const isActuallyImpossible = (oddCount !== 0 && oddCount !== 2);
+
+      if (isActuallyImpossible) {
+        alert(`정답입니다! 🎯\n\n이 도형은 홀수점이 ${oddCount}개로 2개를 초과하므로 수학적으로 절대 한붓그리기를 할 수 없습니다.\n훌륭한 수학적 직관입니다! 스테이지 클리어로 인정됩니다.`);
+        completeStage("불가능 증명");
+      } else {
+        soundFail();
+        alert(`아쉽습니다! 💡\n\n현재 도형은 홀수점이 ${oddCount}개이므로 오일러 경로 또는 회로가 존재하여 '한붓그리기가 가능'합니다!\n차수 보기(🔍)를 켜서 짝수점/홀수점을 확인해보세요.`);
+      }
+    });
 
     canvas.addEventListener('mousedown', onStart);
     window.addEventListener('mousemove', onMove);
@@ -1002,9 +1098,6 @@
       render();
     });
 
-    // =========================================================================
-    // 🚀 [다회 제출 지원 로직]
-    // =========================================================================
     let pendingSubmissionData = null;
 
     btnSubmitSheet.addEventListener('click', () => {
@@ -1075,7 +1168,7 @@
       .then(() => {
         alert("🎉 선생님께 성공적으로 제출되었습니다! 추가 클리어 후 언제든 다시 제출할 수 있습니다.");
         submitModal.style.display = "none";
-        btnSubmitSheet.disabled = false; // 여러 번 제출할 수 있도록 버튼 활성 상태 유지
+        btnSubmitSheet.disabled = false;
         btnSubmitSheet.innerText = "🚀 추가/재제출하기";
         btnSubmitConfirm.disabled = false;
         btnSubmitConfirm.innerText = "제출 완료하기 ✨";
@@ -1097,11 +1190,13 @@
         const tr = document.createElement('tr');
         const rec = stageRecords[st.id];
         const isClr = rec && rec.cleared;
+        const modeType = isClr ? (rec.type || "완료") : "-";
         const diff = getDiffInfo(st.id);
 
         tr.innerHTML = `
           <td>Stage ${st.id}</td>
           <td><span class="difficulty-tag ${diff.cls}">${diff.name}</span></td>
+          <td style="color: #94a3b8;">${modeType}</td>
           <td style="color: ${isClr ? '#4ade80' : '#64748b'}; font-weight: bold;">
             ${isClr ? 'SUCCESS' : '-'}
           </td>
@@ -1120,8 +1215,12 @@
     });
 
     btnResetData.addEventListener('click', () => {
-      if (confirm("정말로 모든 클리어 기록과 진행도를 초기화하시겠습니까? (되돌릴 수 없습니다)")) {
-        localStorage.removeItem(STORAGE_KEY);
+      if (confirm(`대원 [${currentStudent.id} ${currentStudent.name}]의 모든 클리어 기록을 초기화하시겠습니까?`)) {
+        const userKey = `${currentStudent.id}_${currentStudent.name}`;
+        const allUsers = getAllUsersData();
+        delete allUsers[userKey];
+        localStorage.setItem(ALL_USERS_KEY, JSON.stringify(allUsers));
+        
         stageRecords = {};
         unlockedMaxStage = 1;
         currentStageIndex = 0;
@@ -1132,15 +1231,16 @@
 
     btnExportCsv.addEventListener('click', () => {
       let csvContent = "\uFEFF";
-      csvContent += "학번,이름,스테이지,난이도,성공여부,소요시간\n";
+      csvContent += "학번,이름,스테이지,난이도,유형,성공여부,소요시간\n";
 
       stages.forEach((st) => {
         const rec = stageRecords[st.id];
         const isClr = rec && rec.cleared ? "완료" : "미완료";
+        const modeType = rec && rec.cleared ? (rec.type || "그리기") : "";
         const formatted = rec && rec.cleared ? formatTime(rec.timeSeconds) : "";
         const diff = getDiffInfo(st.id).name;
 
-        csvContent += `"${currentStudent.id}","${currentStudent.name}",${st.id},"${diff}","${isClr}","${formatted}"\n`;
+        csvContent += `"${currentStudent.id}","${currentStudent.name}",${st.id},"${diff}","${modeType}","${isClr}","${formatted}"\n`;
       });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -1185,7 +1285,7 @@
         } else if (oddCount === 2) {
           hintStr += `💡 [오일러 경로] 홀수점이 꼭짓점 [${oddNodes.join(', ')}번] 2개 있습니다. 반드시 이 점들 중 하나에서 시작해야만 성공합니다!`;
         } else {
-          hintStr += `💡 홀수점이 ${oddCount}개로 일반적인 한붓그리기가 불가능한 구조입니다.`;
+          hintStr += `💡 [한붓그리기 불가능] 홀수점이 ${oddCount}개로 2개를 초과합니다! '🚫 불가능 판정' 버튼을 눌러 수학적 추론을 입증해보세요!`;
         }
         alert(hintStr);
       } else {
@@ -1199,16 +1299,16 @@
 
     function drawEdge(u, v, curvature, isVisited, edge) {
       ctx.beginPath();
-      ctx.lineWidth = isVisited ? 6 : (edge.isKey ? 5 : 3.5);
+      ctx.lineWidth = isVisited ? 7 : (edge.isKey ? 6 : 4);
       
       if (isVisited) {
         ctx.strokeStyle = '#38bdf8';
         ctx.shadowColor = '#38bdf8';
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = 10;
       } else if (edge.isKey) {
         ctx.strokeStyle = '#facc15';
         ctx.shadowColor = '#eab308';
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 12;
       } else {
         ctx.strokeStyle = '#334155';
         ctx.shadowBlur = 0;
@@ -1256,9 +1356,9 @@
 
       if (isDrawing && currentNode) {
         ctx.beginPath();
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 3.5;
         ctx.strokeStyle = '#facc15';
-        ctx.setLineDash([5, 5]);
+        ctx.setLineDash([6, 6]);
         ctx.moveTo(currentNode.x, currentNode.y);
         ctx.lineTo(pointerPos.x, pointerPos.y);
         ctx.stroke();
@@ -1271,24 +1371,33 @@
         const isOdd = deg % 2 !== 0;
 
         ctx.beginPath();
-        ctx.arc(node.x, node.y, 14, 0, Math.PI * 2);
+        ctx.arc(node.x, node.y, 18, 0, Math.PI * 2);
         ctx.fillStyle = isCurrent ? '#f43f5e' : (showDegrees && isOdd ? '#e11d48' : '#1e293b');
         ctx.fill();
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 3;
         ctx.strokeStyle = isCurrent ? '#ffffff' : (showDegrees && isOdd ? '#fda4af' : '#64748b');
         ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 11px sans-serif';
+        ctx.font = 'bold 13px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(showDegrees ? `${deg}` : `${node.id}`, node.x, node.y);
       });
     }
 
+    // 직전 접속자 자동 확인 및 복원
     window.addEventListener('DOMContentLoaded', () => {
-      const hasSavedData = loadFromStorage();
-      if (hasSavedData) {
+      const lastUserKey = localStorage.getItem(LAST_SESSION_KEY);
+      const allUsers = getAllUsersData();
+
+      if (lastUserKey && allUsers[lastUserKey]) {
+        const userData = allUsers[lastUserKey];
+        currentStudent = userData.student;
+        stageRecords = userData.stageRecords || {};
+        unlockedMaxStage = userData.unlockedMaxStage || 1;
+        currentStageIndex = userData.currentStageIndex || 0;
+
         loginModal.style.display = 'none';
         displayStudent.innerText = `대원: ${currentStudent.id} ${currentStudent.name} (변경)`;
         updateStageSelectOptions();
