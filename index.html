@@ -211,7 +211,7 @@
       <h3>👋 수학 탐구 대원 등록</h3>
       <p style="font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 16px;">
         4자리 학번(예: 1105)과 이름을 입력하세요.<br>
-        <span style="color: #facc15;">⭐ 기존에 플레이했던 학번/이름을 적으면 기록이 자동 복원됩니다!</span>
+        <span style="color: #4ade80;">🔓 1~100단계 모든 스테이지가 해금되어 자유롭게 탐구할 수 있습니다!</span>
       </p>
       <input type="text" id="input-student-id" class="input-field" maxlength="4" placeholder="4자리 학번 (예: 1105)" autocomplete="off">
       <input type="text" id="input-student-name" class="input-field" placeholder="이름 입력 (예: 홍길동)" autocomplete="off">
@@ -436,7 +436,6 @@
 
     let currentStudent = { id: "", name: "" };
     let stageRecords = {};
-    let unlockedMaxStage = 1;
     let currentStageIndex = 0;
 
     function getAllUsersData() {
@@ -457,7 +456,6 @@
         allUsers[userKey] = {
           student: currentStudent,
           stageRecords: stageRecords,
-          unlockedMaxStage: unlockedMaxStage,
           currentStageIndex: currentStageIndex,
           updatedAt: Date.now()
         };
@@ -476,16 +474,13 @@
           const data = allUsers[userKey];
           currentStudent = data.student || { id: sid, name: sname };
           stageRecords = data.stageRecords || {};
-          unlockedMaxStage = data.unlockedMaxStage || 1;
           currentStageIndex = data.currentStageIndex || 0;
           return true;
         }
       } catch (e) {}
       
-      // 저장된 기록이 없는 신규 학생인 경우 초기화
       currentStudent = { id: sid, name: sname };
       stageRecords = {};
-      unlockedMaxStage = 1;
       currentStageIndex = 0;
       return false;
     }
@@ -732,20 +727,14 @@
     const btnSubmitCancel = document.getElementById('btn-submit-cancel');
     const btnSubmitConfirm = document.getElementById('btn-submit-confirm');
 
+    // 🌟 [모든 잠금 해제: 1~100단계 전체 활성화]
     function updateStageSelectOptions() {
       stageSelect.innerHTML = "";
       stages.forEach((st) => {
         const opt = document.createElement('option');
         opt.value = st.id - 1;
-        const isLocked = (st.id <= 20) ? (st.id > unlockedMaxStage) : (unlockedMaxStage < 20);
-
-        if (isLocked) {
-          opt.innerText = `🔒 Stage ${st.id} (잠김)`;
-          opt.disabled = true;
-        } else {
-          opt.innerText = `Stage ${st.id}: ${st.title}`;
-          opt.disabled = false;
-        }
+        opt.innerText = `Stage ${st.id}: ${st.title}`;
+        opt.disabled = false;
         stageSelect.appendChild(opt);
       });
       stageSelect.value = currentStageIndex;
@@ -775,7 +764,6 @@
         return;
       }
 
-      // 학생 데이터 로드 (기존 클리어 기록 및 단계 복원)
       const isExistingUser = loadUserData(sid, sname);
       displayStudent.innerText = `대원: ${sid} ${sname} (변경)`;
       loginModal.style.display = 'none';
@@ -1044,10 +1032,6 @@
         };
       }
 
-      if (curStageId === unlockedMaxStage && unlockedMaxStage < 100) {
-        unlockedMaxStage++;
-      }
-
       saveToStorage();
       updateStageSelectOptions();
 
@@ -1222,7 +1206,6 @@
         localStorage.setItem(ALL_USERS_KEY, JSON.stringify(allUsers));
         
         stageRecords = {};
-        unlockedMaxStage = 1;
         currentStageIndex = 0;
         alert("기록이 초기화되었습니다.");
         location.reload();
@@ -1386,7 +1369,6 @@
       });
     }
 
-    // 직전 접속자 자동 확인 및 복원
     window.addEventListener('DOMContentLoaded', () => {
       const lastUserKey = localStorage.getItem(LAST_SESSION_KEY);
       const allUsers = getAllUsersData();
@@ -1395,7 +1377,6 @@
         const userData = allUsers[lastUserKey];
         currentStudent = userData.student;
         stageRecords = userData.stageRecords || {};
-        unlockedMaxStage = userData.unlockedMaxStage || 1;
         currentStageIndex = userData.currentStageIndex || 0;
 
         loginModal.style.display = 'none';
