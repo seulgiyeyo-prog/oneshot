@@ -207,10 +207,10 @@
     <div class="modal-box">
       <h3>👋 수학 탐구 대원 등록</h3>
       <p style="font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 16px;">
-        4자리 학번(예: 1105)과 이름을 입력하세요.<br>
-        <span style="color: #4ade80;">⭐ 언제 다시 같은 학번/이름으로 들어와도 성공 기록이 유지됩니다!</span>
+        학번과 이름을 입력하세요.<br>
+        <span style="color: #4ade80;">⭐ 동일한 학번/이름으로 접속 시 이전 성공 기록이 자동 복원됩니다!</span>
       </p>
-      <input type="text" id="input-student-id" class="input-field" maxlength="4" placeholder="4자리 학번 (예: 1105)" autocomplete="off">
+      <input type="text" id="input-student-id" class="input-field" placeholder="학번 입력 (예: 1105)" autocomplete="off">
       <input type="text" id="input-student-name" class="input-field" placeholder="이름 입력 (예: 홍길동)" autocomplete="off">
       <div style="display: flex; justify-content: center; margin-top: 5px;">
         <button id="btn-start-game" type="button" style="width: 100%; padding: 12px; font-size: 15px; font-weight: bold;">탐구 시작하기 🚀</button>
@@ -310,18 +310,22 @@
   <script>
     const GOOGLE_SHEET_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyU4fpwiJTUsuYGXdFM6tXTstOqVHXyCbKMvZYSVB9gPOFUYvEj_ylu0jh9vHbswMhUIQ/exec";
 
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
-
     function getAudioContext() {
-      if (!audioCtx) audioCtx = new AudioCtx();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!audioCtx && AudioCtx) audioCtx = new AudioCtx();
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume().catch(() => {});
+        }
+      } catch (e) {}
       return audioCtx;
     }
 
     function soundPass(step = 0) {
       try {
         const ctx = getAudioContext();
+        if (!ctx) return;
         const t = ctx.currentTime;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -344,6 +348,7 @@
     function soundWin() {
       try {
         const ctx = getAudioContext();
+        if (!ctx) return;
         const t = ctx.currentTime;
         const notes = [523.25, 659.25, 783.99, 1046.50];
         notes.forEach((freq, i) => {
@@ -365,6 +370,7 @@
     function soundFail() {
       try {
         const ctx = getAudioContext();
+        if (!ctx) return;
         const t = ctx.currentTime;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -380,9 +386,6 @@
       } catch (e) {}
     }
 
-    // =========================================================================
-    // 💾 [학번+이름 완전 영구 저장소 엔진: 덮어쓰기 버그 원천 차단]
-    // =========================================================================
     let currentStudent = { id: "", name: "" };
     let stageRecords = {};
     let currentStageIndex = 0;
@@ -391,7 +394,6 @@
       return `euler_user_${sid.trim()}_${sname.trim()}`;
     }
 
-    // 변경사항이 있을 때만 안전하게 저장
     function saveStudentData() {
       if (!currentStudent.id || !currentStudent.name) return;
       try {
@@ -407,7 +409,6 @@
       } catch (e) {}
     }
 
-    // 저장된 데이터 정확히 불러오기
     function loadStudentData(sid, sname) {
       const key = getStorageKey(sid, sname);
       try {
@@ -454,7 +455,8 @@
     }
 
     function updateTimerDisplay() {
-      document.getElementById('ui-timer').innerText = `⏱️ ${formatTime(stageElapsedSeconds)}`;
+      const el = document.getElementById('ui-timer');
+      if (el) el.innerText = `⏱️ ${formatTime(stageElapsedSeconds)}`;
     }
 
     const quizPool = [
@@ -484,7 +486,6 @@
       let nodes = [];
       let edges = [];
 
-      // 특정 스테이지(7, 14, 21, 35, 49, 63, 77, 91)는 수학적 한붓그리기 불가
       const isImpossible = [7, 14, 21, 35, 49, 63, 77, 91].includes(level);
 
       if (level === 1) {
@@ -666,12 +667,13 @@
     let pointerPos = { x: 0, y: 0 };
     let currentQuiz = null;
 
+    // 즉시 동작하도록 보장된 로그인 핸들러
     function handleLogin() {
-      const sid = inputStudentId.value.trim();
-      const sname = inputStudentName.value.trim();
+      const sid = (inputStudentId.value || "").trim();
+      const sname = (inputStudentName.value || "").trim();
 
-      if (!/^\d{4}$/.test(sid)) {
-        alert("학번은 4자리 숫자로 입력해주세요! (예: 1105)");
+      if (!sid) {
+        alert("학번을 입력해주세요!");
         inputStudentId.focus();
         return;
       }
@@ -681,19 +683,24 @@
         return;
       }
 
-      // 1. 기존 데이터 완벽 로드
+      // 오디오 컨텍스트 언락 시도 (실패해도 중단 없이 무조건 통과)
+      getAudioContext();
+
       const isExistingUser = loadStudentData(sid, sname);
       
-      displayStudent.innerText = `대원: ${sid} ${sname} (변경)`;
+      // 모달 즉시 숨김
       loginModal.style.display = 'none';
+      displayStudent.innerText = `대원: ${sid} ${sname} (변경)`;
 
-      getAudioContext();
       updateStageSelectOptions();
 
       if (isExistingUser) {
         const clearedNum = Object.keys(stageRecords).filter(k => stageRecords[k].cleared).length;
-        uiMsg.innerText = `👋 반가워요, ${sname} 대원! (성공 기록: ${clearedNum}개 완벽 복원됨)`;
+        uiMsg.innerText = `👋 반가워요, ${sname} 대원! (성공 기록: ${clearedNum}개 복원됨)`;
         uiMsg.style.color = "#4ade80";
+      } else {
+        uiMsg.innerText = `점들을 드래그하거나 순서대로 터치하여 모든 선을 연결하세요!`;
+        uiMsg.style.color = "#94a3b8";
       }
 
       initStage(currentStageIndex);
@@ -716,8 +723,6 @@
 
     function initStage(idx) {
       currentStageIndex = Math.max(0, Math.min(idx, stages.length - 1));
-      
-      // 화면 UI 동기화
       updateStageSelectOptions();
       
       const diff = getDiffInfo(currentStageIndex + 1);
@@ -854,7 +859,6 @@
       const curStageId = stage.id;
       const formatted = formatTime(stageElapsedSeconds);
 
-      // 스테이지 기록 갱신
       if (!stageRecords[curStageId] || stageElapsedSeconds < stageRecords[curStageId].timeSeconds) {
         stageRecords[curStageId] = {
           cleared: true,
@@ -863,7 +867,6 @@
         };
       }
 
-      // 성공 시점에 즉각 안전 저장!
       saveStudentData();
       updateStageSelectOptions();
 
@@ -1196,7 +1199,6 @@
       });
     }
 
-    // 초기 접속 시 직전 대원 데이터 자동 확인
     window.addEventListener('DOMContentLoaded', () => {
       const lastKey = localStorage.getItem("euler_last_active_key");
       if (lastKey) {
@@ -1219,6 +1221,7 @@
         } catch (e) {}
       }
       loginModal.style.display = 'flex';
+      inputStudentId.focus();
     });
   </script>
 </body>
