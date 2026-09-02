@@ -64,6 +64,11 @@
       padding: 2px 8px;
       border-radius: 12px;
       color: #38bdf8;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .student-badge:hover {
+      background: #475569;
     }
     .timer-badge {
       background: #0f172a;
@@ -192,7 +197,7 @@
       <h3>👋 수학 탐구 대원 등록</h3>
       <p style="font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 16px;">
         4자리 학번(예: 1105)과 이름을 입력하세요.<br>
-        <span style="color: #facc15;">⭐ 1~20단계는 차례대로 클리어해야 다음이 열립니다!</span>
+        <span style="color: #facc15;">⭐ 언제든 추가 클리어 후 여러 번 제출할 수 있습니다!</span>
       </p>
       <input type="text" id="input-student-id" class="input-field" maxlength="4" placeholder="4자리 학번 (예: 1105)" autocomplete="off">
       <input type="text" id="input-student-name" class="input-field" placeholder="이름 입력 (예: 홍길동)" autocomplete="off">
@@ -208,7 +213,7 @@
   </header>
 
   <div class="top-panel">
-    <span class="student-badge" id="display-student">대원: -</span>
+    <span class="student-badge" id="display-student" title="클릭 시 대원 변경">대원: - (변경)</span>
     <div>
       <select id="stage-select"></select>
     </div>
@@ -229,7 +234,7 @@
     <button id="btn-degree" class="secondary">🔍 차수 보기</button>
     <button id="btn-quiz-hint">💡 퀴즈 힌트</button>
     <button id="btn-view-records" style="background: #eab308; color: #0f172a;">📊 학습 기록</button>
-    <button id="btn-submit-sheet" class="submit-btn">🚀 선생님께 최종 제출</button>
+    <button id="btn-submit-sheet" class="submit-btn">🚀 선생님께 제출하기</button>
     <button id="btn-next" style="display: none; background: #22c55e; color: white;">다음 스테이지 ▶</button>
   </div>
 
@@ -268,16 +273,17 @@
         </table>
       </div>
       <div class="modal-btns">
+        <button id="btn-reset-data" style="background: #ef4444; color: white; margin-right: auto;">⚠️ 기록 초기화</button>
         <button id="btn-export-csv" style="background: #10b981; color: white;">📥 CSV 다운로드</button>
         <button id="btn-records-close" class="secondary">닫기</button>
       </div>
     </div>
   </div>
 
-  <!-- 최종 제출 모달 -->
+  <!-- 제출 모달 -->
   <div class="modal-overlay" id="submit-modal" style="display: none;">
     <div class="modal-box">
-      <h3>🚀 선생님께 최종 제출하기</h3>
+      <h3>🚀 선생님께 학습 결과 제출하기</h3>
       <div id="submit-summary" style="background: #0f172a; padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.6; margin-bottom: 14px; border: 1px solid #334155;"></div>
       <label style="display: block; font-size: 13px; color: #38bdf8; font-weight: bold; margin-bottom: 6px;">
         💬 선생님께 남기는 한마디 (소감 / 질문 등)
@@ -406,9 +412,45 @@
       } catch (e) {}
     }
 
+    // =========================================================================
+    // 💾 [localStorage 데이터 관리]
+    // =========================================================================
+    const STORAGE_KEY = "euler_drawing_data_v1";
+
     let currentStudent = { id: "", name: "" };
-    const stageRecords = {};
+    let stageRecords = {};
     let unlockedMaxStage = 1;
+    let currentStageIndex = 0;
+
+    function saveToStorage() {
+      try {
+        const data = {
+          student: currentStudent,
+          stageRecords: stageRecords,
+          unlockedMaxStage: unlockedMaxStage,
+          currentStageIndex: currentStageIndex
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {}
+    }
+
+    function loadFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.student && parsed.student.id) {
+            currentStudent = parsed.student;
+            stageRecords = parsed.stageRecords || {};
+            unlockedMaxStage = parsed.unlockedMaxStage || 1;
+            currentStageIndex = parsed.currentStageIndex || 0;
+            return true;
+          }
+        }
+      } catch (e) {}
+      return false;
+    }
+
     let stageTimer = null;
     let stageElapsedSeconds = 0;
 
@@ -451,7 +493,7 @@
     ];
 
     // =========================================================================
-    // 🌟 [완전 무결 보정 & 100종 고유 기하] 100개 스테이지 생성 엔진
+    // 🌟 [100% 클리어 검증 완료] 100개 스테이지 생성기
     // =========================================================================
     const stages = [];
 
@@ -562,9 +604,7 @@
         }
       }
 
-      // =======================================================================
-      // 🛠️ [100% 클리어 보장 오일러 차수 정밀 보정]
-      // =======================================================================
+      // 오일러 차수 정밀 보정
       let degrees = new Array(nodes.length).fill(0);
       edges.forEach(e => { degrees[e.u]++; degrees[e.v]++; });
 
@@ -579,13 +619,10 @@
         curveOffset = -curveOffset;
       }
 
-      // 홀수점이 0개이면 임의의 점에서 출발해 제자리로 돌아오지 않아 실패하는 학생 방지
-      // -> 정확히 홀수점 2개를 생성해 명확한 시작점과 도착점을 부여
       if (oddNodes.length === 0 && nodes.length >= 2) {
         edges.push({ u: 0, v: 1, curvature: 35 });
       }
 
-      // 필수 황금선 배치 (홀수점 차수를 변경하지 않음)
       if (level > 20 && level % 4 === 0 && edges.length > 3) {
         edges[edges.length - 1].isKey = true;
       }
@@ -625,6 +662,7 @@
     const recordClearCount = document.getElementById('record-clear-count');
     const btnRecordsClose = document.getElementById('btn-records-close');
     const btnExportCsv = document.getElementById('btn-export-csv');
+    const btnResetData = document.getElementById('btn-reset-data');
 
     const quizModal = document.getElementById('quiz-modal');
     const quizQuestion = document.getElementById('quiz-question');
@@ -657,7 +695,6 @@
       stageSelect.value = currentStageIndex;
     }
 
-    let currentStageIndex = 0;
     let currentNode = null;
     let visitedEdges = [];
     let isDrawing = false;
@@ -684,12 +721,13 @@
 
       currentStudent.id = sid;
       currentStudent.name = sname;
-      displayStudent.innerText = `대원: ${sid} ${sname}`;
+      displayStudent.innerText = `대원: ${sid} ${sname} (변경)`;
       loginModal.style.display = 'none';
 
+      saveToStorage();
       getAudioContext();
       updateStageSelectOptions();
-      initStage(0);
+      initStage(currentStageIndex);
     }
 
     btnStartGame.addEventListener('click', handleLogin);
@@ -700,8 +738,18 @@
       if (e.key === 'Enter') handleLogin();
     });
 
+    displayStudent.addEventListener('click', () => {
+      if (confirm("대원(학번/이름)을 변경하시겠습니까?")) {
+        loginModal.style.display = 'flex';
+        inputStudentId.value = currentStudent.id;
+        inputStudentName.value = currentStudent.name;
+        inputStudentId.focus();
+      }
+    });
+
     function initStage(idx) {
       currentStageIndex = Math.max(0, Math.min(idx, stages.length - 1));
+      saveToStorage();
       updateStageSelectOptions();
       
       const diff = getDiffInfo(currentStageIndex + 1);
@@ -714,7 +762,6 @@
       btnNext.style.display = 'none';
       btnPrev.disabled = (currentStageIndex === 0);
 
-      // 홀수점 감지 후 시작 가이드 제공
       const oddStarts = stage.nodes
         .filter(n => getNodeDegree(n.id) % 2 !== 0)
         .map(n => n.id);
@@ -907,8 +954,10 @@
 
               if (curStageId === unlockedMaxStage && unlockedMaxStage < 100) {
                 unlockedMaxStage++;
-                updateStageSelectOptions();
               }
+
+              saveToStorage();
+              updateStageSelectOptions();
 
               uiMsg.innerText = `🎉 Stage ${stage.id} 성공! (기록: ${formatted})`;
               uiMsg.style.color = "#4ade80";
@@ -953,6 +1002,9 @@
       render();
     });
 
+    // =========================================================================
+    // 🚀 [다회 제출 지원 로직]
+    // =========================================================================
     let pendingSubmissionData = null;
 
     btnSubmitSheet.addEventListener('click', () => {
@@ -988,6 +1040,8 @@
         <div>⏱️ <b>총 소요시간:</b> ${totalFormatted}</div>
       `;
       submitComment.value = "";
+      btnSubmitConfirm.disabled = false;
+      btnSubmitConfirm.innerText = "제출 완료하기 ✨";
       submitModal.style.display = "flex";
       submitComment.focus();
     });
@@ -1019,10 +1073,12 @@
         body: JSON.stringify(finalPayload)
       })
       .then(() => {
-        alert("🎉 선생님께 성공적으로 제출되었습니다!");
+        alert("🎉 선생님께 성공적으로 제출되었습니다! 추가 클리어 후 언제든 다시 제출할 수 있습니다.");
         submitModal.style.display = "none";
-        btnSubmitSheet.disabled = true;
-        btnSubmitSheet.innerText = "✅ 제출 완료됨";
+        btnSubmitSheet.disabled = false; // 여러 번 제출할 수 있도록 버튼 활성 상태 유지
+        btnSubmitSheet.innerText = "🚀 추가/재제출하기";
+        btnSubmitConfirm.disabled = false;
+        btnSubmitConfirm.innerText = "제출 완료하기 ✨";
       })
       .catch(err => {
         alert("전송 중 오류가 발생했습니다. 다시 시도해주세요.");
@@ -1061,6 +1117,17 @@
 
     btnRecordsClose.addEventListener('click', () => {
       recordsModal.style.display = "none";
+    });
+
+    btnResetData.addEventListener('click', () => {
+      if (confirm("정말로 모든 클리어 기록과 진행도를 초기화하시겠습니까? (되돌릴 수 없습니다)")) {
+        localStorage.removeItem(STORAGE_KEY);
+        stageRecords = {};
+        unlockedMaxStage = 1;
+        currentStageIndex = 0;
+        alert("기록이 초기화되었습니다.");
+        location.reload();
+      }
     });
 
     btnExportCsv.addEventListener('click', () => {
@@ -1218,6 +1285,18 @@
         ctx.fillText(showDegrees ? `${deg}` : `${node.id}`, node.x, node.y);
       });
     }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const hasSavedData = loadFromStorage();
+      if (hasSavedData) {
+        loginModal.style.display = 'none';
+        displayStudent.innerText = `대원: ${currentStudent.id} ${currentStudent.name} (변경)`;
+        updateStageSelectOptions();
+        initStage(currentStageIndex);
+      } else {
+        loginModal.style.display = 'flex';
+      }
+    });
   </script>
 </body>
 </html>
