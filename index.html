@@ -69,9 +69,7 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-    .student-badge:hover {
-      background: #475569;
-    }
+    .student-badge:hover { background: #475569; }
     .timer-badge {
       background: #0f172a;
       border: 1px solid #38bdf8;
@@ -210,7 +208,7 @@
       <h3>👋 수학 탐구 대원 등록</h3>
       <p style="font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 16px;">
         4자리 학번(예: 1105)과 이름을 입력하세요.<br>
-        <span style="color: #4ade80;">🔓 1~100단계 모든 스테이지가 해금되어 자유롭게 탐구할 수 있습니다!</span>
+        <span style="color: #4ade80;">⭐ 언제 다시 같은 학번/이름으로 들어와도 성공 기록이 유지됩니다!</span>
       </p>
       <input type="text" id="input-student-id" class="input-field" maxlength="4" placeholder="4자리 학번 (예: 1105)" autocomplete="off">
       <input type="text" id="input-student-name" class="input-field" placeholder="이름 입력 (예: 홍길동)" autocomplete="off">
@@ -239,11 +237,12 @@
     <canvas id="gameCanvas" width="680" height="500"></canvas>
   </div>
 
-  <div class="guide-text" id="ui-msg">꼭짓점을 누르고 손을 떼지 않은 채 모든 선을 그리세요!</div>
+  <div class="guide-text" id="ui-msg">점들을 드래그하거나 순서대로 터치하여 모든 선을 연결하세요!</div>
 
   <div class="controls">
     <button id="btn-prev" class="secondary">◀ 이전</button>
     <button id="btn-reset" class="secondary">🔄 다시 하기</button>
+    <button id="btn-undo" class="secondary">↩ 1단계 취소</button>
     <button id="btn-degree" class="secondary">🔍 차수 보기</button>
     <button id="btn-impossible" class="impossible-btn">🚫 불가능 판정</button>
     <button id="btn-quiz-hint">💡 퀴즈 힌트</button>
@@ -326,60 +325,19 @@
         const t = ctx.currentTime;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        const baseFreq = 400 + Math.min(step * 45, 600);
+        const baseFreq = 400 + Math.min(step * 40, 500);
 
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(baseFreq * 1.6, t);
+        osc.frequency.setValueAtTime(baseFreq * 1.5, t);
         osc.frequency.exponentialRampToValueAtTime(baseFreq, t + 0.08);
 
-        gain.gain.setValueAtTime(0.2, t);
+        gain.gain.setValueAtTime(0.18, t);
         gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
 
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(t);
         osc.stop(t + 0.08);
-
-        const bufferSize = ctx.sampleRate * 0.03;
-        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-
-        const noise = ctx.createBufferSource();
-        noise.buffer = buffer;
-
-        const filter = ctx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.value = 2400 + step * 50;
-        filter.Q.value = 3.0;
-
-        const noiseGain = ctx.createGain();
-        noiseGain.gain.setValueAtTime(0.12, t);
-        noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
-
-        noise.connect(filter);
-        filter.connect(noiseGain);
-        noiseGain.connect(ctx.destination);
-        noise.start(t);
-      } catch (e) {}
-    }
-
-    function soundKeyPassed() {
-      try {
-        const ctx = getAudioContext();
-        const t = ctx.currentTime;
-        [1046.5, 1318.5, 1567.98].forEach((f, idx) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(f, t + idx * 0.04);
-          gain.gain.setValueAtTime(0.15, t + idx * 0.04);
-          gain.gain.exponentialRampToValueAtTime(0.0001, t + idx * 0.04 + 0.35);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(t + idx * 0.04);
-          osc.stop(t + idx * 0.04 + 0.35);
-        });
       } catch (e) {}
     }
 
@@ -387,21 +345,19 @@
       try {
         const ctx = getAudioContext();
         const t = ctx.currentTime;
-        const notes = [523.25, 659.25, 783.99, 987.77, 1046.50, 1318.51];
+        const notes = [523.25, 659.25, 783.99, 1046.50];
         notes.forEach((freq, i) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
-          const noteStart = t + i * 0.07;
-          const isLast = (i >= notes.length - 2);
-          osc.type = isLast ? 'triangle' : 'sine';
+          const noteStart = t + i * 0.08;
+          osc.type = 'sine';
           osc.frequency.setValueAtTime(freq, noteStart);
-          const dur = isLast ? 0.6 : 0.2;
-          gain.gain.setValueAtTime(0.18, noteStart);
-          gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + dur);
+          gain.gain.setValueAtTime(0.2, noteStart);
+          gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + 0.3);
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(noteStart);
-          osc.stop(noteStart + dur);
+          osc.stop(noteStart + 0.3);
         });
       } catch (e) {}
     }
@@ -413,61 +369,54 @@
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(220, t);
-        osc.frequency.linearRampToValueAtTime(110, t + 0.25);
+        osc.frequency.setValueAtTime(200, t);
+        osc.frequency.linearRampToValueAtTime(100, t + 0.2);
         gain.gain.setValueAtTime(0.2, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(t);
-        osc.stop(t + 0.25);
+        osc.stop(t + 0.2);
       } catch (e) {}
     }
 
-    const ALL_USERS_KEY = "euler_drawing_all_users_v1";
-    const LAST_SESSION_KEY = "euler_drawing_last_session_v1";
-
+    // =========================================================================
+    // 💾 [학번+이름 완전 영구 저장소 엔진: 덮어쓰기 버그 원천 차단]
+    // =========================================================================
     let currentStudent = { id: "", name: "" };
     let stageRecords = {};
     let currentStageIndex = 0;
 
-    function getAllUsersData() {
-      try {
-        const raw = localStorage.getItem(ALL_USERS_KEY);
-        return raw ? JSON.parse(raw) : {};
-      } catch (e) {
-        return {};
-      }
+    function getStorageKey(sid, sname) {
+      return `euler_user_${sid.trim()}_${sname.trim()}`;
     }
 
-    function saveToStorage() {
+    // 변경사항이 있을 때만 안전하게 저장
+    function saveStudentData() {
       if (!currentStudent.id || !currentStudent.name) return;
       try {
-        const userKey = `${currentStudent.id}_${currentStudent.name}`;
-        const allUsers = getAllUsersData();
-
-        allUsers[userKey] = {
+        const key = getStorageKey(currentStudent.id, currentStudent.name);
+        const data = {
           student: currentStudent,
           stageRecords: stageRecords,
           currentStageIndex: currentStageIndex,
-          updatedAt: Date.now()
+          savedAt: Date.now()
         };
-
-        localStorage.setItem(ALL_USERS_KEY, JSON.stringify(allUsers));
-        localStorage.setItem(LAST_SESSION_KEY, userKey);
+        localStorage.setItem(key, JSON.stringify(data));
+        localStorage.setItem("euler_last_active_key", key);
       } catch (e) {}
     }
 
-    function loadUserData(sid, sname) {
+    // 저장된 데이터 정확히 불러오기
+    function loadStudentData(sid, sname) {
+      const key = getStorageKey(sid, sname);
       try {
-        const userKey = `${sid}_${sname}`;
-        const allUsers = getAllUsersData();
-
-        if (allUsers[userKey]) {
-          const data = allUsers[userKey];
-          currentStudent = data.student || { id: sid, name: sname };
-          stageRecords = data.stageRecords || {};
-          currentStageIndex = data.currentStageIndex || 0;
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          currentStudent = { id: sid, name: sname };
+          stageRecords = parsed.stageRecords || {};
+          currentStageIndex = parsed.currentStageIndex || 0;
           return true;
         }
       } catch (e) {}
@@ -529,16 +478,17 @@
       return { name: "마스터 (위상차원망)", cls: "diff-5" };
     }
 
-    function buildDiverseStage(level) {
+    function buildCleanStage(level) {
       const cx = 340, cy = 250;
       let title = "";
       let nodes = [];
       let edges = [];
 
-      const isImpossibleStage = [7, 13, 21, 35, 49, 63, 77, 91].includes(level);
+      // 특정 스테이지(7, 14, 21, 35, 49, 63, 77, 91)는 수학적 한붓그리기 불가
+      const isImpossible = [7, 14, 21, 35, 49, 63, 77, 91].includes(level);
 
       if (level === 1) {
-        title = "기초 정삼각형";
+        title = "정삼각형 삼각망";
         nodes = [{id:0,x:340,y:100},{id:1,x:180,y:390},{id:2,x:500,y:390}];
         edges = [{u:0,v:1},{u:1,v:2},{u:2,v:0}];
       } else if (level === 2) {
@@ -554,35 +504,37 @@
         nodes = [{id:0,x:340,y:80},{id:1,x:520,y:250},{id:2,x:340,y:420},{id:3,x:160,y:250},{id:4,x:340,y:250}];
         edges = [{u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},{u:0,v:4},{u:1,v:4},{u:2,v:4},{u:3,v:4}];
       } else if (level === 5) {
-        title = "헤엄치는 대형 금붕어";
+        title = "금붕어 유영";
         nodes = [{id:0,x:140,y:250},{id:1,x:300,y:140},{id:2,x:300,y:360},{id:3,x:460,y:250},{id:4,x:560,y:140},{id:5,x:560,y:360}];
-        edges = [{u:0,v:1},{u:0,v:2},{u:1,v:3},{u:2,v:3},{u:1,v:2},{u:3,v:4},{u:4,v:5},{u:5,v:3},{u:1,v:4,curvature:35}];
+        edges = [{u:0,v:1},{u:0,v:2},{u:1,v:3},{u:2,v:3},{u:1,v:2},{u:3,v:4},{u:4,v:5},{u:5,v:3}];
       } else if (level === 7) {
-        title = "쾨니히스베르크의 7개 다리";
+        title = "쾨니히스베르크 7개 다리 (불가)";
         nodes = [{id:0,x:340,y:100},{id:1,x:180,y:250},{id:2,x:500,y:250},{id:3,x:340,y:400}];
         edges = [
           {u:0,v:1,curvature:-30},{u:0,v:1,curvature:30},
-          {u:0,v:2,curvature:-30},{u:0,v:2,curvature:30},
-          {u:1,v:3},{u:2,v:3},{u:1,v:2}
+          {u:0,v:2},
+          {u:1,v:2},
+          {u:1,v:3,curvature:-30},{u:1,v:3,curvature:30},
+          {u:2,v:3}
         ];
       } else if (level <= 20) {
-        const sides = 3 + (level - 5);
-        title = `정${sides}각 성형망 (Lv.${level})`;
-        const R = 160;
+        const sides = 3 + (level % 5);
+        title = `정${sides}각 다이어그램 (Lv.${level})`;
+        const R = 150;
         for (let k = 0; k < sides; k++) {
           const a = -Math.PI / 2 + (k * 2 * Math.PI / sides);
           nodes.push({ id: k, x: Math.round(cx + R * Math.cos(a)), y: Math.round(cy + R * Math.sin(a)) });
         }
         for (let k = 0; k < sides; k++) {
           edges.push({ u: k, v: (k + 1) % sides });
-          if (sides >= 5 && k % 2 === 0) {
+          if (sides >= 4 && k % 2 === 0) {
             edges.push({ u: k, v: (k + 2) % sides });
           }
         }
-      } else if (level <= 40) {
-        const spokes = 4 + (level - 20);
-        title = `${spokes}스포크 거대 회전 휠 (Lv.${level})`;
-        const R = 165;
+      } else if (level <= 50) {
+        const spokes = 5 + (level % 6);
+        title = `${spokes}방향 스포크 휠 (Lv.${level})`;
+        const R = 155;
         nodes.push({ id: 0, x: cx, y: cy });
         for (let k = 0; k < spokes; k++) {
           const a = -Math.PI / 2 + (k * 2 * Math.PI / spokes);
@@ -590,42 +542,24 @@
           edges.push({ u: 0, v: k + 1 });
           edges.push({ u: k + 1, v: (k === spokes - 1 ? 1 : k + 2) });
         }
-      } else if (level <= 60) {
-        const N = 4 + ((level - 40) % 7);
-        title = `${N}각 동심 사다리망 (Lv.${level})`;
-        const R1 = 75, R2 = 165;
+      } else if (level <= 80) {
+        const N = 4 + (level % 5);
+        title = `${N}각 동심 궤도망 (Lv.${level})`;
+        const R1 = 70, R2 = 155;
         for (let k = 0; k < N; k++) {
           const a = -Math.PI / 2 + (k * 2 * Math.PI / N);
           nodes.push({ id: k, x: Math.round(cx + R1 * Math.cos(a)), y: Math.round(cy + R1 * Math.sin(a)) });
           nodes.push({ id: k + N, x: Math.round(cx + R2 * Math.cos(a)), y: Math.round(cy + R2 * Math.sin(a)) });
         }
         for (let k = 0; k < N; k++) {
-          const next = (k + 1) % N;
-          edges.push({ u: k, v: next });
-          edges.push({ u: k + N, v: next + N });
+          edges.push({ u: k, v: (k + 1) % N });
+          edges.push({ u: k + N, v: ((k + 1) % N) + N });
           edges.push({ u: k, v: k + N });
         }
-      } else if (level <= 80) {
-        const sides = 4 + ((level - 60) % 6);
-        title = `${sides}각 다면체 투영 격자 (Lv.${level})`;
-        const R1 = 70, R2 = 165;
-        nodes.push({ id: 0, x: cx, y: cy });
-        for (let k = 0; k < sides; k++) {
-          const a = -Math.PI / 2 + (k * 2 * Math.PI / sides);
-          nodes.push({ id: k + 1, x: Math.round(cx + R1 * Math.cos(a)), y: Math.round(cy + R1 * Math.sin(a)) });
-          nodes.push({ id: k + 1 + sides, x: Math.round(cx + R2 * Math.cos(a)), y: Math.round(cy + R2 * Math.sin(a)) });
-        }
-        for (let k = 1; k <= sides; k++) {
-          const next = (k % sides) + 1;
-          edges.push({ u: 0, v: k });
-          edges.push({ u: k, v: next });
-          edges.push({ u: k, v: k + sides });
-          edges.push({ u: k + sides, v: next + sides });
-        }
       } else {
-        const pts = 7 + ((level - 80) % 7);
-        title = `4D 차원 매트릭스 (Lv.${level})`;
-        const R = 165;
+        const pts = 6 + (level % 6);
+        title = `4D 하이퍼 위상망 (Lv.${level})`;
+        const R = 155;
         for (let k = 0; k < pts; k++) {
           const a = -Math.PI / 2 + (k * 2 * Math.PI / pts);
           nodes.push({ id: k, x: Math.round(cx + R * Math.cos(a)), y: Math.round(cy + R * Math.sin(a)) });
@@ -634,44 +568,39 @@
         for (let k = 0; k < pts; k++) {
           edges.push({ u: k, v: (k + 1) % pts });
           edges.push({ u: k, v: pts });
-          if (k % 2 === 0) edges.push({ u: k, v: (k + 2) % pts, curvature: 35 });
         }
       }
 
-      let degrees = new Array(nodes.length).fill(0);
-      edges.forEach(e => { degrees[e.u]++; degrees[e.v]++; });
+      let deg = new Array(nodes.length).fill(0);
+      edges.forEach(e => { deg[e.u]++; deg[e.v]++; });
+      let odd = [];
+      deg.forEach((d, idx) => { if (d % 2 !== 0) odd.push(idx); });
 
-      let oddNodes = [];
-      degrees.forEach((d, idx) => { if (d % 2 !== 0) oddNodes.push(idx); });
-
-      if (!isImpossibleStage) {
-        let curveOffset = 35;
-        while (oddNodes.length > 2) {
-          const u = oddNodes.pop();
-          const v = oddNodes.pop();
-          edges.push({ u, v, curvature: curveOffset });
-          curveOffset = -curveOffset;
+      if (isImpossible) {
+        while (odd.length < 4 && nodes.length >= 4) {
+          edges.push({ u: 0, v: 2, curvature: 35 });
+          deg[0]++; deg[2]++;
+          odd = [];
+          deg.forEach((d, idx) => { if (d % 2 !== 0) odd.push(idx); });
         }
-
-        if (oddNodes.length === 0 && nodes.length >= 2) {
-          edges.push({ u: 0, v: 1, curvature: 40 });
+        while (odd.length > 4) {
+          const u = odd.pop(), v = odd.pop();
+          edges.push({ u, v, curvature: 30 });
         }
       } else {
-        if (oddNodes.length < 4 && nodes.length >= 4) {
-          edges.push({ u: 0, v: 2, curvature: 35 });
-          edges.push({ u: 1, v: 3, curvature: -35 });
+        let curveVal = 35;
+        while (odd.length > 2) {
+          const u = odd.pop(), v = odd.pop();
+          edges.push({ u, v, curvature: curveVal });
+          curveVal = -curveVal;
         }
       }
 
-      if (level > 20 && level % 4 === 0 && edges.length > 3) {
-        edges[edges.length - 1].isKey = true;
-      }
-
-      return { id: level, title, nodes, edges, isImpossible: isImpossibleStage };
+      return { id: level, title, nodes, edges, isImpossible };
     }
 
     for (let i = 1; i <= 100; i++) {
-      stages.push(buildDiverseStage(i));
+      stages.push(buildCleanStage(i));
     }
 
     const canvas = document.getElementById('gameCanvas');
@@ -684,6 +613,7 @@
     const uiMsg = document.getElementById('ui-msg');
     const btnPrev = document.getElementById('btn-prev');
     const btnReset = document.getElementById('btn-reset');
+    const btnUndo = document.getElementById('btn-undo');
     const btnDegree = document.getElementById('btn-degree');
     const btnImpossible = document.getElementById('btn-impossible');
     const btnQuizHint = document.getElementById('btn-quiz-hint');
@@ -722,8 +652,8 @@
       stages.forEach((st) => {
         const opt = document.createElement('option');
         opt.value = st.id - 1;
-        opt.innerText = `Stage ${st.id}: ${st.title}`;
-        opt.disabled = false;
+        const isClr = stageRecords[st.id] && stageRecords[st.id].cleared;
+        opt.innerText = `${isClr ? '✅ ' : ''}Stage ${st.id}: ${st.title}`;
         stageSelect.appendChild(opt);
       });
       stageSelect.value = currentStageIndex;
@@ -731,11 +661,9 @@
 
     let currentNode = null;
     let visitedEdges = [];
-    let isDrawing = false;
     let isCleared = false;
     let showDegrees = false;
     let pointerPos = { x: 0, y: 0 };
-    let strokeSamples = [];
     let currentQuiz = null;
 
     function handleLogin() {
@@ -753,17 +681,18 @@
         return;
       }
 
-      const isExistingUser = loadUserData(sid, sname);
+      // 1. 기존 데이터 완벽 로드
+      const isExistingUser = loadStudentData(sid, sname);
+      
       displayStudent.innerText = `대원: ${sid} ${sname} (변경)`;
       loginModal.style.display = 'none';
 
-      saveToStorage();
       getAudioContext();
       updateStageSelectOptions();
 
       if (isExistingUser) {
         const clearedNum = Object.keys(stageRecords).filter(k => stageRecords[k].cleared).length;
-        uiMsg.innerText = `👋 반가워요, ${sname} 대원! (이전 클리어: ${clearedNum}개 보존됨)`;
+        uiMsg.innerText = `👋 반가워요, ${sname} 대원! (성공 기록: ${clearedNum}개 완벽 복원됨)`;
         uiMsg.style.color = "#4ade80";
       }
 
@@ -787,7 +716,8 @@
 
     function initStage(idx) {
       currentStageIndex = Math.max(0, Math.min(idx, stages.length - 1));
-      saveToStorage();
+      
+      // 화면 UI 동기화
       updateStageSelectOptions();
       
       const diff = getDiffInfo(currentStageIndex + 1);
@@ -804,11 +734,11 @@
         .filter(n => getNodeDegree(n.id) % 2 !== 0)
         .map(n => n.id);
 
-      if (oddStarts.length > 2) {
-        uiMsg.innerText = `❓ 홀수점이 ${oddStarts.length}개입니다! 한붓그리기가 가능할지, 불가능할지 판별해보세요!`;
+      if (stage.isImpossible) {
+        uiMsg.innerText = `❓ 홀수점이 2개를 초과합니다! 한붓그리기가 가능할지 불가능할지 판별해보세요!`;
         uiMsg.style.color = "#f43f5e";
       } else if (oddStarts.length === 2) {
-        uiMsg.innerText = `💡 홀수점 번호 [${oddStarts.join(', ')}] 중 한 곳에서 출발해야 완성됩니다!`;
+        uiMsg.innerText = `💡 홀수점 번호 [${oddStarts.join(', ')}] 중 한 곳에서 출발하세요!`;
         uiMsg.style.color = "#facc15";
       } else {
         uiMsg.innerText = "💡 모든 점이 짝수점입니다. 아무 점에서 시작해도 완성됩니다!";
@@ -819,34 +749,11 @@
       render();
     }
 
-    function resetStroke(failMsg = null) {
+    function resetStroke() {
       currentNode = null;
       visitedEdges = [];
-      strokeSamples = [];
-      isDrawing = false;
       isCleared = false;
       updateUI();
-
-      if (failMsg) {
-        uiMsg.innerText = failMsg;
-        uiMsg.style.color = "#f87171";
-      } else {
-        const stage = stages[currentStageIndex];
-        const oddStarts = stage.nodes
-          .filter(n => getNodeDegree(n.id) % 2 !== 0)
-          .map(n => n.id);
-
-        if (oddStarts.length > 2) {
-          uiMsg.innerText = `❓ 홀수점이 ${oddStarts.length}개입니다! 한붓그리기가 가능할지 판별해보세요!`;
-          uiMsg.style.color = "#f43f5e";
-        } else if (oddStarts.length === 2) {
-          uiMsg.innerText = `💡 홀수점 번호 [${oddStarts.join(', ')}] 중 한 곳에서 출발해야 완성됩니다!`;
-          uiMsg.style.color = "#facc15";
-        } else {
-          uiMsg.innerText = "💡 모든 점이 짝수점입니다. 아무 점에서 시작해도 완성됩니다!";
-          uiMsg.style.color = "#38bdf8";
-        }
-      }
       render();
     }
 
@@ -867,10 +774,9 @@
       };
     }
 
-    // 꼭짓점 판정 반경을 안정적인 24px로 조정
     function findNodeAt(x, y) {
       const stage = stages[currentStageIndex];
-      return stage.nodes.find(n => Math.hypot(n.x - x, n.y - y) <= 24);
+      return stage.nodes.find(n => Math.hypot(n.x - x, n.y - y) <= 32);
     }
 
     function getNodeDegree(nodeId) {
@@ -878,64 +784,36 @@
       return stage.edges.filter(e => e.u === nodeId || e.v === nodeId).length;
     }
 
-    // =========================================================================
-    // 🎯 [정밀 간선 궤적 분석 엔진: 의도한 곡선 판정]
-    // =========================================================================
-    function getAverageDistanceToEdge(edge, samples) {
+    function tryMoveToNode(targetNode) {
+      if (!currentNode || isCleared) return;
+      if (targetNode.id === currentNode.id) return;
+
       const stage = stages[currentStageIndex];
-      const u = stage.nodes[edge.u];
-      const v = stage.nodes[edge.v];
-      const curvature = edge.curvature || 0;
 
-      // 샘플 포인트가 부족할 경우 단일 계산
-      if (!samples || samples.length === 0) return 0;
+      const availableEdgeIdx = stage.edges.findIndex((edge, idx) => {
+        if (visitedEdges.includes(idx)) return false;
+        return (edge.u === currentNode.id && edge.v === targetNode.id) ||
+               (edge.v === currentNode.id && edge.u === targetNode.id);
+      });
 
-      let totalDist = 0;
-      const sampleCount = samples.length;
+      if (availableEdgeIdx !== -1) {
+        visitedEdges.push(availableEdgeIdx);
+        currentNode = targetNode;
+        soundPass(visitedEdges.length);
+        updateUI();
 
-      // 궤적의 주요 샘플 포인트들과 베지에 곡선 간의 누적 최소거리 측정
-      for (let i = 0; i < sampleCount; i++) {
-        const pX = samples[i].x;
-        const pY = samples[i].y;
-
-        if (curvature === 0) {
-          const dx = v.x - u.x;
-          const dy = v.y - u.y;
-          const l2 = dx * dx + dy * dy;
-          if (l2 === 0) {
-            totalDist += Math.hypot(pX - u.x, pY - u.y);
-          } else {
-            let t = ((pX - u.x) * dx + (pY - u.y) * dy) / l2;
-            t = Math.max(0, Math.min(1, t));
-            totalDist += Math.hypot(pX - (u.x + t * dx), pY - (u.y + t * dy));
-          }
-        } else {
-          const midX = (u.x + v.x) / 2;
-          const midY = (u.y + v.y) / 2;
-          const dx = v.x - u.x;
-          const dy = v.y - u.y;
-          const len = Math.hypot(dx, dy);
-          const nx = -dy / len;
-          const ny = dx / len;
-          const ctrlX = midX + nx * curvature;
-          const ctrlY = midY + ny * curvature;
-
-          let minDist = Infinity;
-          for (let t = 0.1; t <= 0.9; t += 0.15) {
-            const inv = 1 - t;
-            const qx = inv * inv * u.x + 2 * inv * t * ctrlX + t * t * v.x;
-            const qy = inv * inv * u.y + 2 * inv * t * ctrlY + t * t * v.y;
-            const d = Math.hypot(pX - qx, pY - qy);
-            if (d < minDist) minDist = d;
-          }
-          totalDist += minDist;
+        if (visitedEdges.length === stage.edges.length) {
+          completeStage("그리기 완성");
         }
+      } else {
+        soundFail();
+        uiMsg.innerText = "❌ 두 꼭짓점 사이에 지나갈 수 있는 남은 선이 없습니다!";
+        uiMsg.style.color = "#f87171";
       }
-
-      return totalDist / sampleCount;
+      render();
     }
 
-    function onStart(e) {
+    function handlePointerDown(e) {
       if (isCleared) return;
       getAudioContext();
       const pos = getPos(e);
@@ -943,100 +821,40 @@
       const node = findNodeAt(pos.x, pos.y);
 
       if (node) {
-        isDrawing = true;
-        currentNode = node;
-        visitedEdges = [];
-        strokeSamples = [pos];
-        soundPass(0);
-        uiMsg.innerText = "선을 따라 다음 점으로 드래그하세요!";
-        uiMsg.style.color = "#38bdf8";
-        updateUI();
+        if (!currentNode) {
+          currentNode = node;
+          soundPass(0);
+          uiMsg.innerText = "다음 점을 터치하거나 드래그하여 선을 연결하세요!";
+          uiMsg.style.color = "#38bdf8";
+        } else {
+          tryMoveToNode(node);
+        }
         render();
       }
     }
 
-    function onMove(e) {
-      if (!isDrawing || isCleared || !currentNode) return;
+    function handlePointerMove(e) {
+      if (isCleared || !currentNode) return;
       pointerPos = getPos(e);
-      strokeSamples.push(pointerPos);
 
       const targetNode = findNodeAt(pointerPos.x, pointerPos.y);
-
-      // 목표 노드에 도달했고, 현재 노드와 다르며, 충분히 손가락 이동이 발생했을 때만 판정
       if (targetNode && targetNode.id !== currentNode.id) {
-        const stage = stages[currentStageIndex];
-        
-        // 현재 노드와 대상 노드 사이의 연결 가능한(방문하지 않은) 모든 간선 탐색
-        const candidateIndices = [];
-        stage.edges.forEach((edge, idx) => {
-          if (visitedEdges.includes(idx)) return;
-          if ((edge.u === currentNode.id && edge.v === targetNode.id) ||
-              (edge.v === currentNode.id && edge.u === targetNode.id)) {
-            candidateIndices.push(idx);
-          }
-        });
-
-        if (candidateIndices.length > 0) {
-          let chosenIndex = candidateIndices[0];
-
-          // 동일한 두 점 사이에 간선(직선/곡선)이 2개 이상일 때 손가락의 궤적과 가장 일치하는 선 선택
-          if (candidateIndices.length > 1) {
-            let minAvgDist = Infinity;
-
-            candidateIndices.forEach(idx => {
-              const edge = stage.edges[idx];
-              const avgDist = getAverageDistanceToEdge(edge, strokeSamples);
-              if (avgDist < minAvgDist) {
-                minAvgDist = avgDist;
-                chosenIndex = idx;
-              }
-            });
-          }
-
-          const crossedEdge = stage.edges[chosenIndex];
-          visitedEdges.push(chosenIndex);
-          currentNode = targetNode;
-          strokeSamples = [pointerPos]; // 새로운 노드에서 궤적을 즉시 리셋하여 오터치 방지
-          
-          if (crossedEdge.isKey) soundKeyPassed();
-          else soundPass(visitedEdges.length);
-          
-          updateUI();
-
-          if (visitedEdges.length === stage.edges.length) {
-            const hasMissedKey = stage.edges.some((e, idx) => e.isKey && !visitedEdges.includes(idx));
-            
-            if (hasMissedKey) {
-              soundFail();
-              resetStroke("❌ 필수 황금 다리를 건너지 않았습니다!");
-            } else {
-              completeStage("그리기 완성");
-            }
-          }
-        }
+        tryMoveToNode(targetNode);
       }
       render();
-    }
-
-    function onEnd() {
-      if (isCleared) return;
-      if (isDrawing) {
-        isDrawing = false;
-        soundFail();
-        resetStroke("❌ 손을 뗐습니다! 한붓그리기는 도중에 손을 떼면 안 됩니다.");
-      }
     }
 
     function completeStage(modeText) {
       const stage = stages[currentStageIndex];
       isCleared = true;
-      isDrawing = false;
+      currentNode = null;
       stopTimer();
       soundWin();
 
       const curStageId = stage.id;
       const formatted = formatTime(stageElapsedSeconds);
 
+      // 스테이지 기록 갱신
       if (!stageRecords[curStageId] || stageElapsedSeconds < stageRecords[curStageId].timeSeconds) {
         stageRecords[curStageId] = {
           cleared: true,
@@ -1045,7 +863,8 @@
         };
       }
 
-      saveToStorage();
+      // 성공 시점에 즉각 안전 저장!
+      saveStudentData();
       updateStageSelectOptions();
 
       uiMsg.innerText = `🎉 Stage ${stage.id} 성공! [${modeText}] (기록: ${formatted})`;
@@ -1057,29 +876,37 @@
 
     btnImpossible.addEventListener('click', () => {
       const stage = stages[currentStageIndex];
-      let oddCount = 0;
-      stage.nodes.forEach(n => {
-        if (getNodeDegree(n.id) % 2 !== 0) oddCount++;
-      });
+      let deg = new Array(stage.nodes.length).fill(0);
+      stage.edges.forEach(e => { deg[e.u]++; deg[e.v]++; });
+      const oddCount = deg.filter(d => d % 2 !== 0).length;
 
-      const isActuallyImpossible = (oddCount !== 0 && oddCount !== 2);
+      const isMathematicallyImpossible = (oddCount !== 0 && oddCount !== 2);
 
-      if (isActuallyImpossible) {
-        alert(`정답입니다! 🎯\n\n이 도형은 홀수점이 ${oddCount}개로 2개를 초과하므로 수학적으로 절대 한붓그리기를 할 수 없습니다.\n훌륭한 수학적 직관입니다! 스테이지 클리어로 인정됩니다.`);
+      if (isMathematicallyImpossible) {
+        alert(`정답입니다! 🎯\n\n이 도형은 홀수점이 ${oddCount}개로 2개를 초과하므로 오일러 경로가 절대 존재할 수 없습니다.\n수학적 추론 성공!`);
         completeStage("불가능 증명");
       } else {
         soundFail();
-        alert(`아쉽습니다! 💡\n\n현재 도형은 홀수점이 ${oddCount}개이므로 오일러 경로 또는 회로가 존재하여 '한붓그리기가 가능'합니다!\n차수 보기(🔍)를 켜서 짝수점/홀수점을 확인해보세요.`);
+        alert(`아쉽습니다! 💡\n\n현재 도형은 홀수점이 ${oddCount}개이므로 '한붓그리기가 가능'한 도형입니다.\n차수 보기(🔍)를 켜서 확인해보세요.`);
       }
     });
 
-    canvas.addEventListener('mousedown', onStart);
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onEnd);
+    btnUndo.addEventListener('click', () => {
+      if (visitedEdges.length === 0 || isCleared) return;
+      const lastEdgeIdx = visitedEdges.pop();
+      const stage = stages[currentStageIndex];
+      const edge = stage.edges[lastEdgeIdx];
+      
+      currentNode = (currentNode.id === edge.u) ? stage.nodes[edge.v] : stage.nodes[edge.u];
+      updateUI();
+      render();
+    });
 
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); onStart(e); }, { passive: false });
-    window.addEventListener('touchmove', (e) => { onMove(e); }, { passive: false });
-    window.addEventListener('touchend', onEnd);
+    canvas.addEventListener('mousedown', handlePointerDown);
+    window.addEventListener('mousemove', handlePointerMove);
+
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handlePointerDown(e); }, { passive: false });
+    window.addEventListener('touchmove', (e) => { e.preventDefault(); handlePointerMove(e); }, { passive: false });
 
     stageSelect.addEventListener('change', (e) => initStage(parseInt(e.target.value)));
     btnPrev.addEventListener('click', () => {
@@ -1088,7 +915,7 @@
     btnNext.addEventListener('click', () => {
       if (currentStageIndex < stages.length - 1) initStage(currentStageIndex + 1);
     });
-    btnReset.addEventListener('click', () => resetStroke());
+    btnReset.addEventListener('click', () => initStage(currentStageIndex));
     btnDegree.addEventListener('click', () => {
       showDegrees = !showDegrees;
       btnDegree.classList.toggle('toggle-active', showDegrees);
@@ -1212,12 +1039,9 @@
     });
 
     btnResetData.addEventListener('click', () => {
-      if (confirm(`대원 [${currentStudent.id} ${currentStudent.name}]의 모든 클리어 기록을 초기화하시겠습니까?`)) {
-        const userKey = `${currentStudent.id}_${currentStudent.name}`;
-        const allUsers = getAllUsersData();
-        delete allUsers[userKey];
-        localStorage.setItem(ALL_USERS_KEY, JSON.stringify(allUsers));
-        
+      if (confirm(`대원 [${currentStudent.id} ${currentStudent.name}]의 기록을 초기화하시겠습니까?`)) {
+        const key = getStorageKey(currentStudent.id, currentStudent.name);
+        localStorage.removeItem(key);
         stageRecords = {};
         currentStageIndex = 0;
         alert("기록이 초기화되었습니다.");
@@ -1266,22 +1090,18 @@
       if (userAns === currentQuiz.a) {
         quizModal.style.display = "none";
         const stage = stages[currentStageIndex];
-        let oddCount = 0;
+        let deg = new Array(stage.nodes.length).fill(0);
+        stage.edges.forEach(e => { deg[e.u]++; deg[e.v]++; });
         const oddNodes = [];
-        stage.nodes.forEach(n => {
-          if (getNodeDegree(n.id) % 2 !== 0) {
-            oddCount++;
-            oddNodes.push(n.id);
-          }
-        });
+        deg.forEach((d, idx) => { if (d % 2 !== 0) oddNodes.push(idx); });
 
         let hintStr = `정답입니다! 🎉 힌트가 해금되었습니다.\n\n`;
-        if (oddCount === 0) {
-          hintStr += `💡 [오일러 회로] 모든 꼭짓점이 짝수점입니다. 어느 점에서 시작해도 제자리로 돌아오며 완성할 수 있습니다.`;
-        } else if (oddCount === 2) {
+        if (stage.isImpossible) {
+          hintStr += `💡 [한붓그리기 불가능] 홀수점이 ${oddNodes.length}개로 2개를 초과합니다! '🚫 불가능 판정'을 눌러 증명해보세요!`;
+        } else if (oddNodes.length === 2) {
           hintStr += `💡 [오일러 경로] 홀수점이 꼭짓점 [${oddNodes.join(', ')}번] 2개 있습니다. 반드시 이 점들 중 하나에서 시작해야만 성공합니다!`;
         } else {
-          hintStr += `💡 [한붓그리기 불가능] 홀수점이 ${oddCount}개로 2개를 초과합니다! '🚫 불가능 판정' 버튼을 눌러 수학적 추론을 입증해보세요!`;
+          hintStr += `💡 [오일러 회로] 모든 꼭짓점이 짝수점입니다. 어느 점에서 시작해도 제자리로 돌아오며 완성할 수 있습니다.`;
         }
         alert(hintStr);
       } else {
@@ -1293,40 +1113,34 @@
       if (e.key === 'Enter') btnQuizSubmit.click();
     });
 
-    function drawEdge(u, v, curvature, isVisited, edge) {
+    function drawEdge(u, v, curvature, isVisited) {
       ctx.beginPath();
-      ctx.lineWidth = isVisited ? 7 : (edge.isKey ? 6 : 4);
+      ctx.lineWidth = isVisited ? 7 : 4;
       
       if (isVisited) {
         ctx.strokeStyle = '#38bdf8';
         ctx.shadowColor = '#38bdf8';
         ctx.shadowBlur = 10;
-      } else if (edge.isKey) {
-        ctx.strokeStyle = '#facc15';
-        ctx.shadowColor = '#eab308';
-        ctx.shadowBlur = 12;
       } else {
         ctx.strokeStyle = '#334155';
         ctx.shadowBlur = 0;
       }
       ctx.lineCap = 'round';
 
-      let midX = (u.x + v.x) / 2;
-      let midY = (u.y + v.y) / 2;
-      let ctrlX = midX, ctrlY = midY;
-
       if (!curvature) {
         ctx.moveTo(u.x, u.y);
         ctx.lineTo(v.x, v.y);
       } else {
+        const midX = (u.x + v.x) / 2;
+        const midY = (u.y + v.y) / 2;
         const dx = v.x - u.x;
         const dy = v.y - u.y;
         const len = Math.hypot(dx, dy);
         const nx = -dy / len;
         const ny = dx / len;
 
-        ctrlX = midX + nx * curvature;
-        ctrlY = midY + ny * curvature;
+        const ctrlX = midX + nx * curvature;
+        const ctrlY = midY + ny * curvature;
 
         ctx.moveTo(u.x, u.y);
         ctx.quadraticCurveTo(ctrlX, ctrlY, v.x, v.y);
@@ -1341,18 +1155,18 @@
 
       stage.edges.forEach((edge, idx) => {
         if (!visitedEdges.includes(idx)) {
-          drawEdge(stage.nodes[edge.u], stage.nodes[edge.v], edge.curvature, false, edge);
+          drawEdge(stage.nodes[edge.u], stage.nodes[edge.v], edge.curvature, false);
         }
       });
 
       visitedEdges.forEach((edgeIdx) => {
         const edge = stage.edges[edgeIdx];
-        drawEdge(stage.nodes[edge.u], stage.nodes[edge.v], edge.curvature, true, edge);
+        drawEdge(stage.nodes[edge.u], stage.nodes[edge.v], edge.curvature, true);
       });
 
-      if (isDrawing && currentNode) {
+      if (currentNode && !isCleared) {
         ctx.beginPath();
-        ctx.lineWidth = 3.5;
+        ctx.lineWidth = 3;
         ctx.strokeStyle = '#facc15';
         ctx.setLineDash([6, 6]);
         ctx.moveTo(currentNode.x, currentNode.y);
@@ -1367,7 +1181,7 @@
         const isOdd = deg % 2 !== 0;
 
         ctx.beginPath();
-        ctx.arc(node.x, node.y, 18, 0, Math.PI * 2);
+        ctx.arc(node.x, node.y, 20, 0, Math.PI * 2);
         ctx.fillStyle = isCurrent ? '#f43f5e' : (showDegrees && isOdd ? '#e11d48' : '#1e293b');
         ctx.fill();
         ctx.lineWidth = 3;
@@ -1375,30 +1189,36 @@
         ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 13px sans-serif';
+        ctx.font = 'bold 14px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(showDegrees ? `${deg}` : `${node.id}`, node.x, node.y);
       });
     }
 
+    // 초기 접속 시 직전 대원 데이터 자동 확인
     window.addEventListener('DOMContentLoaded', () => {
-      const lastUserKey = localStorage.getItem(LAST_SESSION_KEY);
-      const allUsers = getAllUsersData();
+      const lastKey = localStorage.getItem("euler_last_active_key");
+      if (lastKey) {
+        try {
+          const raw = localStorage.getItem(lastKey);
+          if (raw) {
+            const data = JSON.parse(raw);
+            if (data.student && data.student.id) {
+              currentStudent = data.student;
+              stageRecords = data.stageRecords || {};
+              currentStageIndex = data.currentStageIndex || 0;
 
-      if (lastUserKey && allUsers[lastUserKey]) {
-        const userData = allUsers[lastUserKey];
-        currentStudent = userData.student;
-        stageRecords = userData.stageRecords || {};
-        currentStageIndex = userData.currentStageIndex || 0;
-
-        loginModal.style.display = 'none';
-        displayStudent.innerText = `대원: ${currentStudent.id} ${currentStudent.name} (변경)`;
-        updateStageSelectOptions();
-        initStage(currentStageIndex);
-      } else {
-        loginModal.style.display = 'flex';
+              loginModal.style.display = 'none';
+              displayStudent.innerText = `대원: ${currentStudent.id} ${currentStudent.name} (변경)`;
+              updateStageSelectOptions();
+              initStage(currentStageIndex);
+              return;
+            }
+          }
+        } catch (e) {}
       }
+      loginModal.style.display = 'flex';
     });
   </script>
 </body>
