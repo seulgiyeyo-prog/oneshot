@@ -203,17 +203,18 @@
 </head>
 <body>
 
+  <!-- 학번/이름 등록 모달 -->
   <div class="modal-overlay" id="login-modal">
     <div class="modal-box">
       <h3>👋 수학 탐구 대원 등록</h3>
       <p style="font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 16px;">
         학번과 이름을 입력하세요.<br>
-        <span style="color: #4ade80;">⭐ 동일한 학번/이름으로 접속 시 이전 성공 기록이 자동 복원됩니다!</span>
+        <span style="color: #4ade80;">⭐ 동일한 학번/이름으로 접속 시 이전 기록이 자동 복원됩니다.</span>
       </p>
-      <input type="text" id="input-student-id" class="input-field" placeholder="학번 입력 (예: 1105)" autocomplete="off">
-      <input type="text" id="input-student-name" class="input-field" placeholder="이름 입력 (예: 홍길동)" autocomplete="off">
+      <input type="text" id="input-student-id" class="input-field" placeholder="학번 입력 (예: 1105)" onkeydown="if(event.key==='Enter') document.getElementById('input-student-name').focus();">
+      <input type="text" id="input-student-name" class="input-field" placeholder="이름 입력 (예: 홍길동)" onkeydown="if(event.key==='Enter') handleLogin();">
       <div style="display: flex; justify-content: center; margin-top: 5px;">
-        <button id="btn-start-game" type="button" style="width: 100%; padding: 12px; font-size: 15px; font-weight: bold;">탐구 시작하기 🚀</button>
+        <button id="btn-start-game" type="button" onclick="handleLogin()" style="width: 100%; padding: 12px; font-size: 15px; font-weight: bold;">탐구 시작하기 🚀</button>
       </div>
     </div>
   </div>
@@ -224,9 +225,9 @@
   </header>
 
   <div class="top-panel">
-    <span class="student-badge" id="display-student" title="클릭 시 대원 변경">대원: - (변경)</span>
+    <span class="student-badge" id="display-student" onclick="openLoginModal()" title="클릭 시 대원 변경">대원: - (변경)</span>
     <div>
-      <select id="stage-select"></select>
+      <select id="stage-select" onchange="initStage(parseInt(this.value))"></select>
     </div>
     <span id="diff-badge" class="difficulty-tag diff-1">입문</span>
     <div>남은 선: <span id="ui-remaining" class="badge">0</span> / <span id="ui-total">0</span></div>
@@ -240,29 +241,31 @@
   <div class="guide-text" id="ui-msg">점들을 드래그하거나 순서대로 터치하여 모든 선을 연결하세요!</div>
 
   <div class="controls">
-    <button id="btn-prev" class="secondary">◀ 이전</button>
-    <button id="btn-reset" class="secondary">🔄 다시 하기</button>
-    <button id="btn-undo" class="secondary">↩ 1단계 취소</button>
-    <button id="btn-degree" class="secondary">🔍 차수 보기</button>
-    <button id="btn-impossible" class="impossible-btn">🚫 불가능 판정</button>
-    <button id="btn-quiz-hint">💡 퀴즈 힌트</button>
-    <button id="btn-view-records" style="background: #eab308; color: #0f172a;">📊 학습 기록</button>
-    <button id="btn-submit-sheet" class="submit-btn">🚀 선생님께 제출하기</button>
-    <button id="btn-next" style="display: none; background: #22c55e; color: white;">다음 스테이지 ▶</button>
+    <button id="btn-prev" class="secondary" onclick="if(currentStageIndex>0) initStage(currentStageIndex-1);">◀ 이전</button>
+    <button id="btn-reset" class="secondary" onclick="initStage(currentStageIndex);">🔄 다시 하기</button>
+    <button id="btn-undo" class="secondary" onclick="handleUndo();">↩ 1단계 취소</button>
+    <button id="btn-degree" class="secondary" onclick="toggleDegree();">🔍 차수 보기</button>
+    <button id="btn-impossible" class="impossible-btn" onclick="handleImpossibleCheck();">🚫 불가능 판정</button>
+    <button id="btn-quiz-hint" onclick="openQuizModal();">💡 퀴즈 힌트</button>
+    <button id="btn-view-records" style="background: #eab308; color: #0f172a;" onclick="openRecordsModal();">📊 학습 기록</button>
+    <button id="btn-submit-sheet" class="submit-btn" onclick="openSubmitModal();">🚀 선생님께 제출하기</button>
+    <button id="btn-next" style="display: none; background: #22c55e; color: white;" onclick="if(currentStageIndex<stages.length-1) initStage(currentStageIndex+1);">다음 스테이지 ▶</button>
   </div>
 
+  <!-- 퀴즈 모달 -->
   <div class="modal-overlay" id="quiz-modal" style="display: none;">
     <div class="modal-box">
       <h3>📐 힌트 해금 수학 퀴즈</h3>
       <div class="quiz-q" id="quiz-question" style="font-size: 14px; margin-bottom: 12px; color: #e2e8f0; line-height: 1.4;">문제를 불러오는 중...</div>
-      <input type="text" class="input-field" id="quiz-answer" placeholder="정답을 입력하세요">
+      <input type="text" class="input-field" id="quiz-answer" placeholder="정답을 입력하세요" onkeydown="if(event.key==='Enter') submitQuiz();">
       <div class="modal-btns">
-        <button id="btn-quiz-cancel" class="secondary">닫기</button>
-        <button id="btn-quiz-submit">정답 확인</button>
+        <button class="secondary" onclick="document.getElementById('quiz-modal').style.display='none';">닫기</button>
+        <button onclick="submitQuiz();">정답 확인</button>
       </div>
     </div>
   </div>
 
+  <!-- 학습 기록 모달 -->
   <div class="modal-overlay" id="records-modal" style="display: none;">
     <div class="modal-box" style="max-width: 520px;">
       <h3>📊 한붓그리기 학습 리포트</h3>
@@ -285,13 +288,14 @@
         </table>
       </div>
       <div class="modal-btns">
-        <button id="btn-reset-data" style="background: #ef4444; color: white; margin-right: auto;">⚠️ 이 대원 기록 초기화</button>
-        <button id="btn-export-csv" style="background: #10b981; color: white;">📥 CSV 다운로드</button>
-        <button id="btn-records-close" class="secondary">닫기</button>
+        <button style="background: #ef4444; color: white; margin-right: auto;" onclick="resetCurrentStudentData();">⚠️ 기록 초기화</button>
+        <button style="background: #10b981; color: white;" onclick="exportCsv();">📥 CSV 다운로드</button>
+        <button class="secondary" onclick="document.getElementById('records-modal').style.display='none';">닫기</button>
       </div>
     </div>
   </div>
 
+  <!-- 제출 모달 -->
   <div class="modal-overlay" id="submit-modal" style="display: none;">
     <div class="modal-box">
       <h3>🚀 선생님께 학습 결과 제출하기</h3>
@@ -301,8 +305,8 @@
       </label>
       <textarea id="submit-comment" class="input-field" placeholder="오늘 수업에서 느낀 점이나 질문을 자유롭게 적어보세요! (선택사항)"></textarea>
       <div class="modal-btns">
-        <button id="btn-submit-cancel" class="secondary">취소</button>
-        <button id="btn-submit-confirm" class="submit-btn">제출 완료하기 ✨</button>
+        <button class="secondary" onclick="document.getElementById('submit-modal').style.display='none';">취소</button>
+        <button id="btn-submit-confirm" class="submit-btn" onclick="sendSubmission();">제출 완료하기 ✨</button>
       </div>
     </div>
   </div>
@@ -311,87 +315,36 @@
     const GOOGLE_SHEET_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyU4fpwiJTUsuYGXdFM6tXTstOqVHXyCbKMvZYSVB9gPOFUYvEj_ylu0jh9vHbswMhUIQ/exec";
 
     let audioCtx = null;
-    function getAudioContext() {
+    function playTone(freq, type, duration) {
       try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (!audioCtx && AudioCtx) audioCtx = new AudioCtx();
-        if (audioCtx && audioCtx.state === 'suspended') {
-          audioCtx.resume().catch(() => {});
-        }
-      } catch (e) {}
-      return audioCtx;
-    }
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        if (!audioCtx && AudioClass) audioCtx = new AudioClass();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+        if (!audioCtx) return;
 
-    function soundPass(step = 0) {
-      try {
-        const ctx = getAudioContext();
-        if (!ctx) return;
-        const t = ctx.currentTime;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        const baseFreq = 400 + Math.min(step * 40, 500);
-
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(baseFreq * 1.5, t);
-        osc.frequency.exponentialRampToValueAtTime(baseFreq, t + 0.08);
-
-        gain.gain.setValueAtTime(0.18, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
-
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
         osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(t);
-        osc.stop(t + 0.08);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
       } catch (e) {}
     }
 
-    function soundWin() {
-      try {
-        const ctx = getAudioContext();
-        if (!ctx) return;
-        const t = ctx.currentTime;
-        const notes = [523.25, 659.25, 783.99, 1046.50];
-        notes.forEach((freq, i) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          const noteStart = t + i * 0.08;
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, noteStart);
-          gain.gain.setValueAtTime(0.2, noteStart);
-          gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + 0.3);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(noteStart);
-          osc.stop(noteStart + 0.3);
-        });
-      } catch (e) {}
-    }
-
-    function soundFail() {
-      try {
-        const ctx = getAudioContext();
-        if (!ctx) return;
-        const t = ctx.currentTime;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(200, t);
-        osc.frequency.linearRampToValueAtTime(100, t + 0.2);
-        gain.gain.setValueAtTime(0.2, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(t);
-        osc.stop(t + 0.2);
-      } catch (e) {}
-    }
+    function soundPass(step) { playTone(400 + Math.min(step * 35, 450), 'triangle', 0.08); }
+    function soundWin() { playTone(523, 'sine', 0.15); setTimeout(() => playTone(659, 'sine', 0.25), 100); }
+    function soundFail() { playTone(180, 'sawtooth', 0.2); }
 
     let currentStudent = { id: "", name: "" };
     let stageRecords = {};
     let currentStageIndex = 0;
 
     function getStorageKey(sid, sname) {
-      return `euler_user_${sid.trim()}_${sname.trim()}`;
+      return "euler_save_" + encodeURIComponent(sid.trim()) + "_" + encodeURIComponent(sname.trim());
     }
 
     function saveStudentData() {
@@ -401,11 +354,10 @@
         const data = {
           student: currentStudent,
           stageRecords: stageRecords,
-          currentStageIndex: currentStageIndex,
-          savedAt: Date.now()
+          currentStageIndex: currentStageIndex
         };
         localStorage.setItem(key, JSON.stringify(data));
-        localStorage.setItem("euler_last_active_key", key);
+        localStorage.setItem("euler_last_key", key);
       } catch (e) {}
     }
 
@@ -421,7 +373,6 @@
           return true;
         }
       } catch (e) {}
-      
       currentStudent = { id: sid, name: sname };
       stageRecords = {};
       currentStageIndex = 0;
@@ -432,20 +383,13 @@
     let stageElapsedSeconds = 0;
 
     function startTimer() {
-      stopTimer();
+      if (stageTimer) clearInterval(stageTimer);
       stageElapsedSeconds = 0;
       updateTimerDisplay();
       stageTimer = setInterval(() => {
         stageElapsedSeconds++;
         updateTimerDisplay();
       }, 1000);
-    }
-
-    function stopTimer() {
-      if (stageTimer) {
-        clearInterval(stageTimer);
-        stageTimer = null;
-      }
     }
 
     function formatTime(sec) {
@@ -465,13 +409,11 @@
       { q: "일차방정식 2x + 5 = 13 에서 x의 값은?", a: "4" },
       { q: "(-3) × (-5) 의 계산 결과는 얼마일까요?", a: "15" },
       { q: "정삼각형의 한 내각의 크기는 몇 도(°)일까요? (숫자만 입력)", a: "60" },
-      { q: "오일러 경로에서 출발점과 도착점이 달라야 하는 경우, 홀수점은 정확히 몇 개여야 할까요?", a: "2" },
-      { q: "모든 꼭짓점의 차수가 짝수일 때 생기는 닫힌 한붓그리기 경로를 '오일러 (    )'라고 합니다. 괄호에 들어갈 단어는?", a: "회로" },
-      { q: "절댓값이 7인 양수는 무엇일까요?", a: "7" }
+      { q: "오일러 경로에서 출발점과 도착점이 달라야 하는 경우, 홀수점은 몇 개여야 할까요?", a: "2" },
+      { q: "모든 꼭짓점의 차수가 짝수일 때 생기는 닫힌 한붓그리기 경로를 무엇이라 할까요? (오일러 __)", a: "회로" }
     ];
 
     const stages = [];
-
     function getDiffInfo(stNum) {
       if (stNum <= 20) return { name: "입문 (평면도형)", cls: "diff-1" };
       if (stNum <= 40) return { name: "초급 (다각바퀴)", cls: "diff-2" };
@@ -485,7 +427,6 @@
       let title = "";
       let nodes = [];
       let edges = [];
-
       const isImpossible = [7, 14, 21, 35, 49, 63, 77, 91].includes(level);
 
       if (level === 1) {
@@ -509,14 +450,12 @@
         nodes = [{id:0,x:140,y:250},{id:1,x:300,y:140},{id:2,x:300,y:360},{id:3,x:460,y:250},{id:4,x:560,y:140},{id:5,x:560,y:360}];
         edges = [{u:0,v:1},{u:0,v:2},{u:1,v:3},{u:2,v:3},{u:1,v:2},{u:3,v:4},{u:4,v:5},{u:5,v:3}];
       } else if (level === 7) {
-        title = "쾨니히스베르크 7개 다리 (불가)";
+        title = "쾨니히스베르크 다리 (불가)";
         nodes = [{id:0,x:340,y:100},{id:1,x:180,y:250},{id:2,x:500,y:250},{id:3,x:340,y:400}];
         edges = [
           {u:0,v:1,curvature:-30},{u:0,v:1,curvature:30},
-          {u:0,v:2},
-          {u:1,v:2},
-          {u:1,v:3,curvature:-30},{u:1,v:3,curvature:30},
-          {u:2,v:3}
+          {u:0,v:2},{u:1,v:2},
+          {u:1,v:3,curvature:-30},{u:1,v:3,curvature:30},{u:2,v:3}
         ];
       } else if (level <= 20) {
         const sides = 3 + (level % 5);
@@ -528,9 +467,7 @@
         }
         for (let k = 0; k < sides; k++) {
           edges.push({ u: k, v: (k + 1) % sides });
-          if (sides >= 4 && k % 2 === 0) {
-            edges.push({ u: k, v: (k + 2) % sides });
-          }
+          if (sides >= 4 && k % 2 === 0) edges.push({ u: k, v: (k + 2) % sides });
         }
       } else if (level <= 50) {
         const spokes = 5 + (level % 6);
@@ -543,10 +480,10 @@
           edges.push({ u: 0, v: k + 1 });
           edges.push({ u: k + 1, v: (k === spokes - 1 ? 1 : k + 2) });
         }
-      } else if (level <= 80) {
+      } else {
         const N = 4 + (level % 5);
-        title = `${N}각 동심 궤도망 (Lv.${level})`;
-        const R1 = 70, R2 = 155;
+        title = `${N}각 다차원 위상망 (Lv.${level})`;
+        const R1 = 75, R2 = 155;
         for (let k = 0; k < N; k++) {
           const a = -Math.PI / 2 + (k * 2 * Math.PI / N);
           nodes.push({ id: k, x: Math.round(cx + R1 * Math.cos(a)), y: Math.round(cy + R1 * Math.sin(a)) });
@@ -556,19 +493,6 @@
           edges.push({ u: k, v: (k + 1) % N });
           edges.push({ u: k + N, v: ((k + 1) % N) + N });
           edges.push({ u: k, v: k + N });
-        }
-      } else {
-        const pts = 6 + (level % 6);
-        title = `4D 하이퍼 위상망 (Lv.${level})`;
-        const R = 155;
-        for (let k = 0; k < pts; k++) {
-          const a = -Math.PI / 2 + (k * 2 * Math.PI / pts);
-          nodes.push({ id: k, x: Math.round(cx + R * Math.cos(a)), y: Math.round(cy + R * Math.sin(a)) });
-        }
-        nodes.push({ id: pts, x: cx, y: cy });
-        for (let k = 0; k < pts; k++) {
-          edges.push({ u: k, v: (k + 1) % pts });
-          edges.push({ u: k, v: pts });
         }
       }
 
@@ -606,60 +530,6 @@
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-
-    const stageSelect = document.getElementById('stage-select');
-    const diffBadge = document.getElementById('diff-badge');
-    const uiRemaining = document.getElementById('ui-remaining');
-    const uiTotal = document.getElementById('ui-total');
-    const uiMsg = document.getElementById('ui-msg');
-    const btnPrev = document.getElementById('btn-prev');
-    const btnReset = document.getElementById('btn-reset');
-    const btnUndo = document.getElementById('btn-undo');
-    const btnDegree = document.getElementById('btn-degree');
-    const btnImpossible = document.getElementById('btn-impossible');
-    const btnQuizHint = document.getElementById('btn-quiz-hint');
-    const btnViewRecords = document.getElementById('btn-view-records');
-    const btnSubmitSheet = document.getElementById('btn-submit-sheet');
-    const btnNext = document.getElementById('btn-next');
-    const displayStudent = document.getElementById('display-student');
-
-    const loginModal = document.getElementById('login-modal');
-    const inputStudentId = document.getElementById('input-student-id');
-    const inputStudentName = document.getElementById('input-student-name');
-    const btnStartGame = document.getElementById('btn-start-game');
-
-    const recordsModal = document.getElementById('records-modal');
-    const recordsTableBody = document.getElementById('records-table-body');
-    const recordStudentInfo = document.getElementById('record-student-info');
-    const recordClearCount = document.getElementById('record-clear-count');
-    const btnRecordsClose = document.getElementById('btn-records-close');
-    const btnExportCsv = document.getElementById('btn-export-csv');
-    const btnResetData = document.getElementById('btn-reset-data');
-
-    const quizModal = document.getElementById('quiz-modal');
-    const quizQuestion = document.getElementById('quiz-question');
-    const quizAnswer = document.getElementById('quiz-answer');
-    const btnQuizSubmit = document.getElementById('btn-quiz-submit');
-    const btnQuizCancel = document.getElementById('btn-quiz-cancel');
-
-    const submitModal = document.getElementById('submit-modal');
-    const submitSummary = document.getElementById('submit-summary');
-    const submitComment = document.getElementById('submit-comment');
-    const btnSubmitCancel = document.getElementById('btn-submit-cancel');
-    const btnSubmitConfirm = document.getElementById('btn-submit-confirm');
-
-    function updateStageSelectOptions() {
-      stageSelect.innerHTML = "";
-      stages.forEach((st) => {
-        const opt = document.createElement('option');
-        opt.value = st.id - 1;
-        const isClr = stageRecords[st.id] && stageRecords[st.id].cleared;
-        opt.innerText = `${isClr ? '✅ ' : ''}Stage ${st.id}: ${st.title}`;
-        stageSelect.appendChild(opt);
-      });
-      stageSelect.value = currentStageIndex;
-    }
-
     let currentNode = null;
     let visitedEdges = [];
     let isCleared = false;
@@ -667,104 +537,100 @@
     let pointerPos = { x: 0, y: 0 };
     let currentQuiz = null;
 
-    // 즉시 동작하도록 보장된 로그인 핸들러
+    function openLoginModal() {
+      document.getElementById('input-student-id').value = currentStudent.id || "";
+      document.getElementById('input-student-name').value = currentStudent.name || "";
+      document.getElementById('login-modal').style.display = 'flex';
+    }
+
+    // 핵심: 확실하게 닫히고 시작되는 로그인 처리
     function handleLogin() {
-      const sid = (inputStudentId.value || "").trim();
-      const sname = (inputStudentName.value || "").trim();
+      const idInput = document.getElementById('input-student-id');
+      const nameInput = document.getElementById('input-student-name');
+      const sid = (idInput.value || "").trim();
+      const sname = (nameInput.value || "").trim();
 
       if (!sid) {
         alert("학번을 입력해주세요!");
-        inputStudentId.focus();
+        idInput.focus();
         return;
       }
       if (!sname) {
         alert("이름을 입력해주세요!");
-        inputStudentName.focus();
+        nameInput.focus();
         return;
       }
 
-      // 오디오 컨텍스트 언락 시도 (실패해도 중단 없이 무조건 통과)
-      getAudioContext();
+      // 모달 창 닫기
+      document.getElementById('login-modal').style.display = 'none';
 
-      const isExistingUser = loadStudentData(sid, sname);
-      
-      // 모달 즉시 숨김
-      loginModal.style.display = 'none';
-      displayStudent.innerText = `대원: ${sid} ${sname} (변경)`;
+      // 데이터 로드
+      const isExisting = loadStudentData(sid, sname);
+      document.getElementById('display-student').innerText = `대원: ${sid} ${sname} (변경)`;
 
       updateStageSelectOptions();
 
-      if (isExistingUser) {
+      const guide = document.getElementById('ui-msg');
+      if (isExisting) {
         const clearedNum = Object.keys(stageRecords).filter(k => stageRecords[k].cleared).length;
-        uiMsg.innerText = `👋 반가워요, ${sname} 대원! (성공 기록: ${clearedNum}개 복원됨)`;
-        uiMsg.style.color = "#4ade80";
+        guide.innerText = `👋 반가워요, ${sname} 대원! (성공 기록: ${clearedNum}개 복원됨)`;
+        guide.style.color = "#4ade80";
       } else {
-        uiMsg.innerText = `점들을 드래그하거나 순서대로 터치하여 모든 선을 연결하세요!`;
-        uiMsg.style.color = "#94a3b8";
+        guide.innerText = `점들을 드래그하거나 순서대로 터치하여 모든 선을 연결하세요!`;
+        guide.style.color = "#94a3b8";
       }
 
       initStage(currentStageIndex);
     }
 
-    btnStartGame.addEventListener('click', handleLogin);
-    inputStudentId.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') inputStudentName.focus();
-    });
-    inputStudentName.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') handleLogin();
-    });
-
-    displayStudent.addEventListener('click', () => {
-      loginModal.style.display = 'flex';
-      inputStudentId.value = currentStudent.id || "";
-      inputStudentName.value = currentStudent.name || "";
-      inputStudentId.focus();
-    });
+    function updateStageSelectOptions() {
+      const sel = document.getElementById('stage-select');
+      sel.innerHTML = "";
+      stages.forEach((st) => {
+        const opt = document.createElement('option');
+        opt.value = st.id - 1;
+        const isClr = stageRecords[st.id] && stageRecords[st.id].cleared;
+        opt.innerText = `${isClr ? '✅ ' : ''}Stage ${st.id}: ${st.title}`;
+        sel.appendChild(opt);
+      });
+      sel.value = currentStageIndex;
+    }
 
     function initStage(idx) {
       currentStageIndex = Math.max(0, Math.min(idx, stages.length - 1));
       updateStageSelectOptions();
-      
+
       const diff = getDiffInfo(currentStageIndex + 1);
+      const diffBadge = document.getElementById('diff-badge');
       diffBadge.innerText = diff.name;
       diffBadge.className = `difficulty-tag ${diff.cls}`;
 
-      resetStroke();
-      const stage = stages[currentStageIndex];
-      uiTotal.innerText = stage.edges.length;
-      btnNext.style.display = 'none';
-      btnPrev.disabled = (currentStageIndex === 0);
+      currentNode = null;
+      visitedEdges = [];
+      isCleared = false;
+      document.getElementById('btn-next').style.display = 'none';
+      document.getElementById('btn-prev').disabled = (currentStageIndex === 0);
 
-      const oddStarts = stage.nodes
-        .filter(n => getNodeDegree(n.id) % 2 !== 0)
-        .map(n => n.id);
+      const stage = stages[currentStageIndex];
+      document.getElementById('ui-total').innerText = stage.edges.length;
+      document.getElementById('ui-remaining').innerText = stage.edges.length;
+
+      const oddStarts = stage.nodes.filter(n => getNodeDegree(n.id) % 2 !== 0).map(n => n.id);
+      const guide = document.getElementById('ui-msg');
 
       if (stage.isImpossible) {
-        uiMsg.innerText = `❓ 홀수점이 2개를 초과합니다! 한붓그리기가 가능할지 불가능할지 판별해보세요!`;
-        uiMsg.style.color = "#f43f5e";
+        guide.innerText = `❓ 홀수점이 2개를 초과합니다! 한붓그리기가 가능할지 불가능할지 판별해보세요!`;
+        guide.style.color = "#f43f5e";
       } else if (oddStarts.length === 2) {
-        uiMsg.innerText = `💡 홀수점 번호 [${oddStarts.join(', ')}] 중 한 곳에서 출발하세요!`;
-        uiMsg.style.color = "#facc15";
+        guide.innerText = `💡 홀수점 번호 [${oddStarts.join(', ')}] 중 한 곳에서 출발하세요!`;
+        guide.style.color = "#facc15";
       } else {
-        uiMsg.innerText = "💡 모든 점이 짝수점입니다. 아무 점에서 시작해도 완성됩니다!";
-        uiMsg.style.color = "#38bdf8";
+        guide.innerText = "💡 모든 점이 짝수점입니다. 아무 점에서 시작해도 완성됩니다!";
+        guide.style.color = "#38bdf8";
       }
 
       startTimer();
       render();
-    }
-
-    function resetStroke() {
-      currentNode = null;
-      visitedEdges = [];
-      isCleared = false;
-      updateUI();
-      render();
-    }
-
-    function updateUI() {
-      const stage = stages[currentStageIndex];
-      uiRemaining.innerText = stage.edges.length - visitedEdges.length;
     }
 
     function getPos(e) {
@@ -781,7 +647,7 @@
 
     function findNodeAt(x, y) {
       const stage = stages[currentStageIndex];
-      return stage.nodes.find(n => Math.hypot(n.x - x, n.y - y) <= 32);
+      return stage.nodes.find(n => Math.hypot(n.x - x, n.y - y) <= 34);
     }
 
     function getNodeDegree(nodeId) {
@@ -794,7 +660,6 @@
       if (targetNode.id === currentNode.id) return;
 
       const stage = stages[currentStageIndex];
-
       const availableEdgeIdx = stage.edges.findIndex((edge, idx) => {
         if (visitedEdges.includes(idx)) return false;
         return (edge.u === currentNode.id && edge.v === targetNode.id) ||
@@ -805,22 +670,22 @@
         visitedEdges.push(availableEdgeIdx);
         currentNode = targetNode;
         soundPass(visitedEdges.length);
-        updateUI();
+        document.getElementById('ui-remaining').innerText = stage.edges.length - visitedEdges.length;
 
         if (visitedEdges.length === stage.edges.length) {
           completeStage("그리기 완성");
         }
       } else {
         soundFail();
-        uiMsg.innerText = "❌ 두 꼭짓점 사이에 지나갈 수 있는 남은 선이 없습니다!";
-        uiMsg.style.color = "#f87171";
+        const guide = document.getElementById('ui-msg');
+        guide.innerText = "❌ 두 꼭짓점 사이에 지나갈 수 있는 남은 선이 없습니다!";
+        guide.style.color = "#f87171";
       }
       render();
     }
 
     function handlePointerDown(e) {
       if (isCleared) return;
-      getAudioContext();
       const pos = getPos(e);
       pointerPos = pos;
       const node = findNodeAt(pos.x, pos.y);
@@ -829,8 +694,9 @@
         if (!currentNode) {
           currentNode = node;
           soundPass(0);
-          uiMsg.innerText = "다음 점을 터치하거나 드래그하여 선을 연결하세요!";
-          uiMsg.style.color = "#38bdf8";
+          const guide = document.getElementById('ui-msg');
+          guide.innerText = "다음 점을 터치하거나 드래그하여 선을 연결하세요!";
+          guide.style.color = "#38bdf8";
         } else {
           tryMoveToNode(node);
         }
@@ -841,7 +707,6 @@
     function handlePointerMove(e) {
       if (isCleared || !currentNode) return;
       pointerPos = getPos(e);
-
       const targetNode = findNodeAt(pointerPos.x, pointerPos.y);
       if (targetNode && targetNode.id !== currentNode.id) {
         tryMoveToNode(targetNode);
@@ -853,12 +718,10 @@
       const stage = stages[currentStageIndex];
       isCleared = true;
       currentNode = null;
-      stopTimer();
+      if (stageTimer) clearInterval(stageTimer);
       soundWin();
 
       const curStageId = stage.id;
-      const formatted = formatTime(stageElapsedSeconds);
-
       if (!stageRecords[curStageId] || stageElapsedSeconds < stageRecords[curStageId].timeSeconds) {
         stageRecords[curStageId] = {
           cleared: true,
@@ -870,262 +733,196 @@
       saveStudentData();
       updateStageSelectOptions();
 
-      uiMsg.innerText = `🎉 Stage ${stage.id} 성공! [${modeText}] (기록: ${formatted})`;
-      uiMsg.style.color = "#4ade80";
+      const guide = document.getElementById('ui-msg');
+      guide.innerText = `🎉 Stage ${stage.id} 성공! [${modeText}] (기록: ${formatTime(stageElapsedSeconds)})`;
+      guide.style.color = "#4ade80";
+
       if (currentStageIndex < stages.length - 1) {
-        btnNext.style.display = 'inline-block';
+        document.getElementById('btn-next').style.display = 'inline-block';
       }
     }
 
-    btnImpossible.addEventListener('click', () => {
+    function handleImpossibleCheck() {
       const stage = stages[currentStageIndex];
       let deg = new Array(stage.nodes.length).fill(0);
       stage.edges.forEach(e => { deg[e.u]++; deg[e.v]++; });
       const oddCount = deg.filter(d => d % 2 !== 0).length;
 
-      const isMathematicallyImpossible = (oddCount !== 0 && oddCount !== 2);
-
-      if (isMathematicallyImpossible) {
-        alert(`정답입니다! 🎯\n\n이 도형은 홀수점이 ${oddCount}개로 2개를 초과하므로 오일러 경로가 절대 존재할 수 없습니다.\n수학적 추론 성공!`);
+      if (oddCount !== 0 && oddCount !== 2) {
+        alert(`정답입니다! 🎯\n\n이 도형은 홀수점이 ${oddCount}개로 2개를 초과하므로 절대 한붓그리기를 할 수 없습니다.\n수학적 판정 성공!`);
         completeStage("불가능 증명");
       } else {
         soundFail();
-        alert(`아쉽습니다! 💡\n\n현재 도형은 홀수점이 ${oddCount}개이므로 '한붓그리기가 가능'한 도형입니다.\n차수 보기(🔍)를 켜서 확인해보세요.`);
+        alert(`아쉽습니다! 💡\n\n현재 도형은 홀수점이 ${oddCount}개이므로 한붓그리기가 가능합니다.\n차수 보기(🔍)를 켜서 확인해보세요.`);
       }
-    });
+    }
 
-    btnUndo.addEventListener('click', () => {
+    function handleUndo() {
       if (visitedEdges.length === 0 || isCleared) return;
       const lastEdgeIdx = visitedEdges.pop();
       const stage = stages[currentStageIndex];
       const edge = stage.edges[lastEdgeIdx];
-      
       currentNode = (currentNode.id === edge.u) ? stage.nodes[edge.v] : stage.nodes[edge.u];
-      updateUI();
+      document.getElementById('ui-remaining').innerText = stage.edges.length - visitedEdges.length;
       render();
-    });
+    }
+
+    function toggleDegree() {
+      showDegrees = !showDegrees;
+      document.getElementById('btn-degree').classList.toggle('toggle-active', showDegrees);
+      render();
+    }
 
     canvas.addEventListener('mousedown', handlePointerDown);
     window.addEventListener('mousemove', handlePointerMove);
-
     canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handlePointerDown(e); }, { passive: false });
     window.addEventListener('touchmove', (e) => { e.preventDefault(); handlePointerMove(e); }, { passive: false });
 
-    stageSelect.addEventListener('change', (e) => initStage(parseInt(e.target.value)));
-    btnPrev.addEventListener('click', () => {
-      if (currentStageIndex > 0) initStage(currentStageIndex - 1);
-    });
-    btnNext.addEventListener('click', () => {
-      if (currentStageIndex < stages.length - 1) initStage(currentStageIndex + 1);
-    });
-    btnReset.addEventListener('click', () => initStage(currentStageIndex));
-    btnDegree.addEventListener('click', () => {
-      showDegrees = !showDegrees;
-      btnDegree.classList.toggle('toggle-active', showDegrees);
-      render();
-    });
+    // 퀴즈 모달
+    function openQuizModal() {
+      currentQuiz = quizPool[Math.floor(Math.random() * quizPool.length)];
+      document.getElementById('quiz-question').innerText = currentQuiz.q;
+      const input = document.getElementById('quiz-answer');
+      input.value = "";
+      document.getElementById('quiz-modal').style.display = 'flex';
+      input.focus();
+    }
 
-    let pendingSubmissionData = null;
+    function submitQuiz() {
+      const userAns = document.getElementById('quiz-answer').value.trim();
+      if (userAns === currentQuiz.a) {
+        document.getElementById('quiz-modal').style.display = 'none';
+        const stage = stages[currentStageIndex];
+        let deg = new Array(stage.nodes.length).fill(0);
+        stage.edges.forEach(e => { deg[e.u]++; deg[e.v]++; });
+        const odd = deg.filter(d => d % 2 !== 0).length;
 
-    btnSubmitSheet.addEventListener('click', () => {
-      const clearedIds = Object.keys(stageRecords)
-        .map(Number)
-        .filter(id => stageRecords[id].cleared)
-        .sort((a, b) => a - b);
+        let hint = "정답입니다! 🎉\n\n";
+        if (stage.isImpossible) hint += "💡 [불가능] 홀수점이 2개를 넘습니다. '불가능 판정'을 누르세요!";
+        else if (odd === 2) hint += "💡 [오일러 경로] 홀수점이 2개 있습니다. 홀수점에서 시작해야 합니다!";
+        else hint += "💡 [오일러 회로] 모든 점이 짝수점입니다. 어느 점에서 출발해도 됩니다!";
+        alert(hint);
+      } else {
+        alert("아쉽네요! 정답이 아닙니다. 다시 풀어보세요. 💡");
+      }
+    }
 
+    // 기록 및 CSV
+    function openRecordsModal() {
+      document.getElementById('record-student-info').innerText = `학번: ${currentStudent.id} | 성명: ${currentStudent.name}`;
+      const clrCount = Object.values(stageRecords).filter(r => r.cleared).length;
+      document.getElementById('record-clear-count').innerText = `클리어: ${clrCount} / 100`;
+
+      const tbody = document.getElementById('records-table-body');
+      tbody.innerHTML = "";
+      stages.forEach(st => {
+        const tr = document.createElement('tr');
+        const rec = stageRecords[st.id];
+        const isClr = rec && rec.cleared;
+        const diff = getDiffInfo(st.id);
+        tr.innerHTML = `
+          <td>Stage ${st.id}</td>
+          <td><span class="difficulty-tag ${diff.cls}">${diff.name}</span></td>
+          <td style="color: #94a3b8;">${isClr ? (rec.type || "완료") : "-"}</td>
+          <td style="color: ${isClr ? '#4ade80' : '#64748b'}; font-weight: bold;">${isClr ? 'SUCCESS' : '-'}</td>
+          <td style="font-family: monospace; color: ${isClr ? '#facc15' : '#64748b'};">${isClr ? formatTime(rec.timeSeconds) : '--:--'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('records-modal').style.display = 'flex';
+    }
+
+    function resetCurrentStudentData() {
+      if (confirm(`대원 [${currentStudent.id} ${currentStudent.name}]의 모든 기록을 초기화하시겠습니까?`)) {
+        localStorage.removeItem(getStorageKey(currentStudent.id, currentStudent.name));
+        stageRecords = {};
+        currentStageIndex = 0;
+        alert("기록이 초기화되었습니다.");
+        location.reload();
+      }
+    }
+
+    function exportCsv() {
+      let csv = "\uFEFF학번,이름,스테이지,난이도,유형,성공여부,소요시간\n";
+      stages.forEach(st => {
+        const rec = stageRecords[st.id];
+        const isClr = rec && rec.cleared ? "완료" : "미완료";
+        const type = rec && rec.cleared ? (rec.type || "그리기") : "";
+        const time = rec && rec.cleared ? formatTime(rec.timeSeconds) : "";
+        csv += `"${currentStudent.id}","${currentStudent.name}",${st.id},"${getDiffInfo(st.id).name}","${type}","${isClr}","${time}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `한붓그리기_${currentStudent.id}_${currentStudent.name}.csv`;
+      link.click();
+    }
+
+    // 구글 시트 제출
+    let pendingData = null;
+    function openSubmitModal() {
+      const clearedIds = Object.keys(stageRecords).map(Number).filter(id => stageRecords[id].cleared).sort((a,b)=>a-b);
       if (clearedIds.length === 0) {
         alert("아직 클리어한 스테이지가 없습니다! 한 단계 이상 성공한 후 제출해주세요.");
         return;
       }
-
-      const maxStage = Math.max(...clearedIds);
-      const clearCount = clearedIds.length;
-      const clearedListStr = clearedIds.join(", ");
-      const totalSeconds = clearedIds.reduce((sum, id) => sum + stageRecords[id].timeSeconds, 0);
-      const totalFormatted = formatTime(totalSeconds);
-
-      pendingSubmissionData = {
+      const totalSec = clearedIds.reduce((sum, id) => sum + stageRecords[id].timeSeconds, 0);
+      pendingData = {
         studentId: currentStudent.id,
         studentName: currentStudent.name,
-        maxStage: `Lv.${maxStage}`,
-        clearCount: `${clearCount} / 100`,
-        clearedList: clearedListStr,
-        totalFormatted: totalFormatted
+        maxStage: `Lv.${Math.max(...clearedIds)}`,
+        clearCount: `${clearedIds.length} / 100`,
+        clearedList: clearedIds.join(", "),
+        totalFormatted: formatTime(totalSec)
       };
-
-      submitSummary.innerHTML = `
+      document.getElementById('submit-summary').innerHTML = `
         <div>👤 <b>대원:</b> ${currentStudent.id} ${currentStudent.name}</div>
-        <div>🏆 <b>최종 도달:</b> Lv.${maxStage} (총 ${clearCount}개 클리어)</div>
-        <div>📋 <b>성공 스테이지:</b> Lv. ${clearedListStr}</div>
-        <div>⏱️ <b>총 소요시간:</b> ${totalFormatted}</div>
+        <div>🏆 <b>최종 도달:</b> ${pendingData.maxStage} (총 ${pendingData.clearCount})</div>
+        <div>📋 <b>성공 스테이지:</b> Lv. ${pendingData.clearedList}</div>
+        <div>⏱️ <b>총 소요시간:</b> ${pendingData.totalFormatted}</div>
       `;
-      submitComment.value = "";
-      btnSubmitConfirm.disabled = false;
-      btnSubmitConfirm.innerText = "제출 완료하기 ✨";
-      submitModal.style.display = "flex";
-      submitComment.focus();
-    });
+      document.getElementById('submit-comment').value = "";
+      document.getElementById('submit-modal').style.display = 'flex';
+    }
 
-    btnSubmitCancel.addEventListener('click', () => {
-      submitModal.style.display = "none";
-    });
+    function sendSubmission() {
+      if (!pendingData) return;
+      const btn = document.getElementById('btn-submit-confirm');
+      btn.disabled = true;
+      btn.innerText = "전송 중... ⏳";
 
-    btnSubmitConfirm.addEventListener('click', () => {
-      if (!pendingSubmissionData) return;
-
-      btnSubmitConfirm.disabled = true;
-      btnSubmitConfirm.innerText = "제출 전송 중... ⏳";
-
-      const finalPayload = {
-        studentId: currentStudent.id,
-        studentName: currentStudent.name,
-        maxStage: pendingSubmissionData.maxStage,
-        clearCount: pendingSubmissionData.clearCount,
-        clearedList: pendingSubmissionData.clearedList,
-        totalFormatted: pendingSubmissionData.totalFormatted,
-        comment: submitComment.value.trim()
+      const payload = {
+        ...pendingData,
+        comment: document.getElementById('submit-comment').value.trim()
       };
 
       fetch(GOOGLE_SHEET_WEBAPP_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(finalPayload)
+        body: JSON.stringify(payload)
       })
       .then(() => {
-        alert("🎉 선생님께 성공적으로 제출되었습니다! 추가 클리어 후 언제든 다시 제출할 수 있습니다.");
-        submitModal.style.display = "none";
-        btnSubmitSheet.disabled = false;
-        btnSubmitSheet.innerText = "🚀 추가/재제출하기";
-        btnSubmitConfirm.disabled = false;
-        btnSubmitConfirm.innerText = "제출 완료하기 ✨";
+        alert("🎉 선생님께 성공적으로 제출되었습니다!");
+        document.getElementById('submit-modal').style.display = 'none';
+        btn.disabled = false;
+        btn.innerText = "제출 완료하기 ✨";
       })
-      .catch(err => {
+      .catch(() => {
         alert("전송 중 오류가 발생했습니다. 다시 시도해주세요.");
-        btnSubmitConfirm.disabled = false;
-        btnSubmitConfirm.innerText = "제출 완료하기 ✨";
+        btn.disabled = false;
+        btn.innerText = "제출 완료하기 ✨";
       });
-    });
-
-    btnViewRecords.addEventListener('click', () => {
-      recordStudentInfo.innerText = `학번: ${currentStudent.id} | 성명: ${currentStudent.name}`;
-      const clearedCount = Object.values(stageRecords).filter(r => r.cleared).length;
-      recordClearCount.innerText = `클리어: ${clearedCount} / ${stages.length}`;
-
-      recordsTableBody.innerHTML = "";
-      stages.forEach((st) => {
-        const tr = document.createElement('tr');
-        const rec = stageRecords[st.id];
-        const isClr = rec && rec.cleared;
-        const modeType = isClr ? (rec.type || "완료") : "-";
-        const diff = getDiffInfo(st.id);
-
-        tr.innerHTML = `
-          <td>Stage ${st.id}</td>
-          <td><span class="difficulty-tag ${diff.cls}">${diff.name}</span></td>
-          <td style="color: #94a3b8;">${modeType}</td>
-          <td style="color: ${isClr ? '#4ade80' : '#64748b'}; font-weight: bold;">
-            ${isClr ? 'SUCCESS' : '-'}
-          </td>
-          <td style="font-family: monospace; color: ${isClr ? '#facc15' : '#64748b'};">
-            ${isClr ? formatTime(rec.timeSeconds) : '--:--'}
-          </td>
-        `;
-        recordsTableBody.appendChild(tr);
-      });
-
-      recordsModal.style.display = "flex";
-    });
-
-    btnRecordsClose.addEventListener('click', () => {
-      recordsModal.style.display = "none";
-    });
-
-    btnResetData.addEventListener('click', () => {
-      if (confirm(`대원 [${currentStudent.id} ${currentStudent.name}]의 기록을 초기화하시겠습니까?`)) {
-        const key = getStorageKey(currentStudent.id, currentStudent.name);
-        localStorage.removeItem(key);
-        stageRecords = {};
-        currentStageIndex = 0;
-        alert("기록이 초기화되었습니다.");
-        location.reload();
-      }
-    });
-
-    btnExportCsv.addEventListener('click', () => {
-      let csvContent = "\uFEFF";
-      csvContent += "학번,이름,스테이지,난이도,유형,성공여부,소요시간\n";
-
-      stages.forEach((st) => {
-        const rec = stageRecords[st.id];
-        const isClr = rec && rec.cleared ? "완료" : "미완료";
-        const modeType = rec && rec.cleared ? (rec.type || "그리기") : "";
-        const formatted = rec && rec.cleared ? formatTime(rec.timeSeconds) : "";
-        const diff = getDiffInfo(st.id).name;
-
-        csvContent += `"${currentStudent.id}","${currentStudent.name}",${st.id},"${diff}","${modeType}","${isClr}","${formatted}"\n`;
-      });
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", `한붓그리기_${currentStudent.id}_${currentStudent.name}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
-
-    btnQuizHint.addEventListener('click', () => {
-      currentQuiz = quizPool[Math.floor(Math.random() * quizPool.length)];
-      quizQuestion.innerText = currentQuiz.q;
-      quizAnswer.value = "";
-      quizModal.style.display = "flex";
-      quizAnswer.focus();
-    });
-
-    btnQuizCancel.addEventListener('click', () => {
-      quizModal.style.display = "none";
-    });
-
-    btnQuizSubmit.addEventListener('click', () => {
-      const userAns = quizAnswer.value.trim();
-      if (userAns === currentQuiz.a) {
-        quizModal.style.display = "none";
-        const stage = stages[currentStageIndex];
-        let deg = new Array(stage.nodes.length).fill(0);
-        stage.edges.forEach(e => { deg[e.u]++; deg[e.v]++; });
-        const oddNodes = [];
-        deg.forEach((d, idx) => { if (d % 2 !== 0) oddNodes.push(idx); });
-
-        let hintStr = `정답입니다! 🎉 힌트가 해금되었습니다.\n\n`;
-        if (stage.isImpossible) {
-          hintStr += `💡 [한붓그리기 불가능] 홀수점이 ${oddNodes.length}개로 2개를 초과합니다! '🚫 불가능 판정'을 눌러 증명해보세요!`;
-        } else if (oddNodes.length === 2) {
-          hintStr += `💡 [오일러 경로] 홀수점이 꼭짓점 [${oddNodes.join(', ')}번] 2개 있습니다. 반드시 이 점들 중 하나에서 시작해야만 성공합니다!`;
-        } else {
-          hintStr += `💡 [오일러 회로] 모든 꼭짓점이 짝수점입니다. 어느 점에서 시작해도 제자리로 돌아오며 완성할 수 있습니다.`;
-        }
-        alert(hintStr);
-      } else {
-        alert("아쉽네요! 정답이 아닙니다. 다시 시도해보세요. 💡");
-      }
-    });
-
-    quizAnswer.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') btnQuizSubmit.click();
-    });
+    }
 
     function drawEdge(u, v, curvature, isVisited) {
       ctx.beginPath();
       ctx.lineWidth = isVisited ? 7 : 4;
-      
+      ctx.strokeStyle = isVisited ? '#38bdf8' : '#334155';
       if (isVisited) {
-        ctx.strokeStyle = '#38bdf8';
         ctx.shadowColor = '#38bdf8';
         ctx.shadowBlur = 10;
       } else {
-        ctx.strokeStyle = '#334155';
         ctx.shadowBlur = 0;
       }
       ctx.lineCap = 'round';
@@ -1139,12 +936,8 @@
         const dx = v.x - u.x;
         const dy = v.y - u.y;
         const len = Math.hypot(dx, dy);
-        const nx = -dy / len;
-        const ny = dx / len;
-
-        const ctrlX = midX + nx * curvature;
-        const ctrlY = midY + ny * curvature;
-
+        const ctrlX = midX + (-dy / len) * curvature;
+        const ctrlY = midY + (dx / len) * curvature;
         ctx.moveTo(u.x, u.y);
         ctx.quadraticCurveTo(ctrlX, ctrlY, v.x, v.y);
       }
@@ -1199,8 +992,9 @@
       });
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const lastKey = localStorage.getItem("euler_last_active_key");
+    // 접속 시 이전 대원 자동 확인
+    window.onload = function() {
+      const lastKey = localStorage.getItem("euler_last_key");
       if (lastKey) {
         try {
           const raw = localStorage.getItem(lastKey);
@@ -1211,8 +1005,8 @@
               stageRecords = data.stageRecords || {};
               currentStageIndex = data.currentStageIndex || 0;
 
-              loginModal.style.display = 'none';
-              displayStudent.innerText = `대원: ${currentStudent.id} ${currentStudent.name} (변경)`;
+              document.getElementById('login-modal').style.display = 'none';
+              document.getElementById('display-student').innerText = `대원: ${currentStudent.id} ${currentStudent.name} (변경)`;
               updateStageSelectOptions();
               initStage(currentStageIndex);
               return;
@@ -1220,9 +1014,9 @@
           }
         } catch (e) {}
       }
-      loginModal.style.display = 'flex';
-      inputStudentId.focus();
-    });
+      document.getElementById('login-modal').style.display = 'flex';
+      document.getElementById('input-student-id').focus();
+    };
   </script>
 </body>
 </html>
