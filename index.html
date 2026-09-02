@@ -205,7 +205,6 @@
 </head>
 <body>
 
-  <!-- 학번 4자리 로그인 모달 -->
   <div class="modal-overlay" id="login-modal">
     <div class="modal-box">
       <h3>👋 수학 탐구 대원 등록</h3>
@@ -253,7 +252,6 @@
     <button id="btn-next" style="display: none; background: #22c55e; color: white;">다음 스테이지 ▶</button>
   </div>
 
-  <!-- 퀴즈 모달 -->
   <div class="modal-overlay" id="quiz-modal" style="display: none;">
     <div class="modal-box">
       <h3>📐 힌트 해금 수학 퀴즈</h3>
@@ -266,7 +264,6 @@
     </div>
   </div>
 
-  <!-- 학습 기록 모달 -->
   <div class="modal-overlay" id="records-modal" style="display: none;">
     <div class="modal-box" style="max-width: 520px;">
       <h3>📊 한붓그리기 학습 리포트</h3>
@@ -296,7 +293,6 @@
     </div>
   </div>
 
-  <!-- 제출 모달 -->
   <div class="modal-overlay" id="submit-modal" style="display: none;">
     <div class="modal-box">
       <h3>🚀 선생님께 학습 결과 제출하기</h3>
@@ -428,9 +424,6 @@
       } catch (e) {}
     }
 
-    // =========================================================================
-    // 💾 [학번+이름별 멀티 프로필 localStorage 관리 엔진]
-    // =========================================================================
     const ALL_USERS_KEY = "euler_drawing_all_users_v1";
     const LAST_SESSION_KEY = "euler_drawing_last_session_v1";
 
@@ -526,9 +519,6 @@
       { q: "절댓값이 7인 양수는 무엇일까요?", a: "7" }
     ];
 
-    // =========================================================================
-    // 🌟 [확대된 캔버스 680x500 & 교육용 불가능 스테이지 설계]
-    // =========================================================================
     const stages = [];
 
     function getDiffInfo(stNum) {
@@ -727,7 +717,6 @@
     const btnSubmitCancel = document.getElementById('btn-submit-cancel');
     const btnSubmitConfirm = document.getElementById('btn-submit-confirm');
 
-    // 🌟 [모든 잠금 해제: 1~100단계 전체 활성화]
     function updateStageSelectOptions() {
       stageSelect.innerHTML = "";
       stages.forEach((st) => {
@@ -878,9 +867,10 @@
       };
     }
 
+    // 꼭짓점 판정 반경을 안정적인 24px로 조정
     function findNodeAt(x, y) {
       const stage = stages[currentStageIndex];
-      return stage.nodes.find(n => Math.hypot(n.x - x, n.y - y) <= 26);
+      return stage.nodes.find(n => Math.hypot(n.x - x, n.y - y) <= 24);
     }
 
     function getNodeDegree(nodeId) {
@@ -888,41 +878,61 @@
       return stage.edges.filter(e => e.u === nodeId || e.v === nodeId).length;
     }
 
-    function getDistanceToEdge(edge, pX, pY) {
+    // =========================================================================
+    // 🎯 [정밀 간선 궤적 분석 엔진: 의도한 곡선 판정]
+    // =========================================================================
+    function getAverageDistanceToEdge(edge, samples) {
       const stage = stages[currentStageIndex];
       const u = stage.nodes[edge.u];
       const v = stage.nodes[edge.v];
       const curvature = edge.curvature || 0;
 
-      if (curvature === 0) {
-        const dx = v.x - u.x;
-        const dy = v.y - u.y;
-        const l2 = dx * dx + dy * dy;
-        if (l2 === 0) return Math.hypot(pX - u.x, pY - u.y);
-        let t = ((pX - u.x) * dx + (pY - u.y) * dy) / l2;
-        t = Math.max(0, Math.min(1, t));
-        return Math.hypot(pX - (u.x + t * dx), pY - (u.y + t * dy));
-      } else {
-        const midX = (u.x + v.x) / 2;
-        const midY = (u.y + v.y) / 2;
-        const dx = v.x - u.x;
-        const dy = v.y - u.y;
-        const len = Math.hypot(dx, dy);
-        const nx = -dy / len;
-        const ny = dx / len;
-        const ctrlX = midX + nx * curvature;
-        const ctrlY = midY + ny * curvature;
+      // 샘플 포인트가 부족할 경우 단일 계산
+      if (!samples || samples.length === 0) return 0;
 
-        let minDist = Infinity;
-        for (let t = 0.1; t <= 0.9; t += 0.1) {
-          const inv = 1 - t;
-          const qx = inv * inv * u.x + 2 * inv * t * ctrlX + t * t * v.x;
-          const qy = inv * inv * u.y + 2 * inv * t * ctrlY + t * t * v.y;
-          const d = Math.hypot(pX - qx, pY - qy);
-          if (d < minDist) minDist = d;
+      let totalDist = 0;
+      const sampleCount = samples.length;
+
+      // 궤적의 주요 샘플 포인트들과 베지에 곡선 간의 누적 최소거리 측정
+      for (let i = 0; i < sampleCount; i++) {
+        const pX = samples[i].x;
+        const pY = samples[i].y;
+
+        if (curvature === 0) {
+          const dx = v.x - u.x;
+          const dy = v.y - u.y;
+          const l2 = dx * dx + dy * dy;
+          if (l2 === 0) {
+            totalDist += Math.hypot(pX - u.x, pY - u.y);
+          } else {
+            let t = ((pX - u.x) * dx + (pY - u.y) * dy) / l2;
+            t = Math.max(0, Math.min(1, t));
+            totalDist += Math.hypot(pX - (u.x + t * dx), pY - (u.y + t * dy));
+          }
+        } else {
+          const midX = (u.x + v.x) / 2;
+          const midY = (u.y + v.y) / 2;
+          const dx = v.x - u.x;
+          const dy = v.y - u.y;
+          const len = Math.hypot(dx, dy);
+          const nx = -dy / len;
+          const ny = dx / len;
+          const ctrlX = midX + nx * curvature;
+          const ctrlY = midY + ny * curvature;
+
+          let minDist = Infinity;
+          for (let t = 0.1; t <= 0.9; t += 0.15) {
+            const inv = 1 - t;
+            const qx = inv * inv * u.x + 2 * inv * t * ctrlX + t * t * v.x;
+            const qy = inv * inv * u.y + 2 * inv * t * ctrlY + t * t * v.y;
+            const d = Math.hypot(pX - qx, pY - qy);
+            if (d < minDist) minDist = d;
+          }
+          totalDist += minDist;
         }
-        return minDist;
       }
+
+      return totalDist / sampleCount;
     }
 
     function onStart(e) {
@@ -951,9 +961,12 @@
       strokeSamples.push(pointerPos);
 
       const targetNode = findNodeAt(pointerPos.x, pointerPos.y);
+
+      // 목표 노드에 도달했고, 현재 노드와 다르며, 충분히 손가락 이동이 발생했을 때만 판정
       if (targetNode && targetNode.id !== currentNode.id) {
         const stage = stages[currentStageIndex];
         
+        // 현재 노드와 대상 노드 사이의 연결 가능한(방문하지 않은) 모든 간선 탐색
         const candidateIndices = [];
         stage.edges.forEach((edge, idx) => {
           if (visitedEdges.includes(idx)) return;
@@ -966,15 +979,15 @@
         if (candidateIndices.length > 0) {
           let chosenIndex = candidateIndices[0];
 
+          // 동일한 두 점 사이에 간선(직선/곡선)이 2개 이상일 때 손가락의 궤적과 가장 일치하는 선 선택
           if (candidateIndices.length > 1) {
             let minAvgDist = Infinity;
-            const midSample = strokeSamples[Math.floor(strokeSamples.length / 2)] || pointerPos;
 
             candidateIndices.forEach(idx => {
               const edge = stage.edges[idx];
-              const dist = getDistanceToEdge(edge, midSample.x, midSample.y);
-              if (dist < minAvgDist) {
-                minAvgDist = dist;
+              const avgDist = getAverageDistanceToEdge(edge, strokeSamples);
+              if (avgDist < minAvgDist) {
+                minAvgDist = avgDist;
                 chosenIndex = idx;
               }
             });
@@ -983,7 +996,7 @@
           const crossedEdge = stage.edges[chosenIndex];
           visitedEdges.push(chosenIndex);
           currentNode = targetNode;
-          strokeSamples = [pointerPos];
+          strokeSamples = [pointerPos]; // 새로운 노드에서 궤적을 즉시 리셋하여 오터치 방지
           
           if (crossedEdge.isKey) soundKeyPassed();
           else soundPass(visitedEdges.length);
