@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>오일러 한붓그리기 마스터 100</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       padding: 12px;
@@ -21,10 +19,7 @@
       user-select: none;
       -webkit-user-select: none;
     }
-    header {
-      text-align: center;
-      margin-bottom: 6px;
-    }
+    header { text-align: center; margin-bottom: 6px; }
     h1 {
       margin: 0 0 2px 0;
       font-size: 22px;
@@ -63,9 +58,7 @@
       cursor: pointer;
       outline: none;
     }
-    .badge {
-      color: #facc15;
-    }
+    .badge { color: #facc15; }
     .student-badge {
       background: #334155;
       padding: 2px 8px;
@@ -88,11 +81,7 @@
       border: 2px solid #1f2937;
       overflow: hidden;
     }
-    canvas {
-      display: block;
-      cursor: crosshair;
-      touch-action: none;
-    }
+    canvas { display: block; cursor: crosshair; touch-action: none; }
     .guide-text {
       margin-top: 8px;
       font-size: 13px;
@@ -120,35 +109,18 @@
       transition: all 0.15s ease;
       touch-action: manipulation;
     }
-    button:hover {
-      background: #7dd3fc;
-      transform: translateY(-1px);
-    }
+    button:hover { background: #7dd3fc; transform: translateY(-1px); }
     button:disabled {
       background: #475569 !important;
       color: #94a3b8 !important;
       cursor: not-allowed;
       transform: none;
     }
-    button.secondary {
-      background: #334155;
-      color: #f1f5f9;
-    }
-    button.secondary:hover {
-      background: #475569;
-    }
-    button.submit-btn {
-      background: #10b981;
-      color: white;
-      font-weight: bold;
-    }
-    button.submit-btn:hover {
-      background: #059669;
-    }
-    button.toggle-active {
-      background: #8b5cf6;
-      color: white;
-    }
+    button.secondary { background: #334155; color: #f1f5f9; }
+    button.secondary:hover { background: #475569; }
+    button.submit-btn { background: #10b981; color: white; font-weight: bold; }
+    button.submit-btn:hover { background: #059669; }
+    button.toggle-active { background: #8b5cf6; color: white; }
     .difficulty-tag {
       padding: 2px 6px;
       border-radius: 4px;
@@ -182,12 +154,7 @@
       user-select: text;
       -webkit-user-select: text;
     }
-    .modal-box h3 {
-      margin: 0 0 10px 0;
-      color: #38bdf8;
-      font-size: 18px;
-      text-align: center;
-    }
+    .modal-box h3 { margin: 0 0 10px 0; color: #38bdf8; font-size: 18px; text-align: center; }
     .input-field {
       width: 100%;
       padding: 12px;
@@ -203,17 +170,8 @@
       border-color: #38bdf8;
       box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
     }
-    textarea.input-field {
-      resize: vertical;
-      min-height: 80px;
-      font-family: inherit;
-    }
-    .modal-btns {
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-      margin-top: 15px;
-    }
+    textarea.input-field { resize: vertical; min-height: 80px; font-family: inherit; }
+    .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 15px; }
     .table-container {
       max-height: 240px;
       overflow-y: auto;
@@ -221,26 +179,14 @@
       border-radius: 6px;
       margin-top: 10px;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-      text-align: center;
-    }
-    th, td {
-      padding: 8px 6px;
-      border-bottom: 1px solid #334155;
-    }
-    th {
-      background: #0f172a;
-      color: #38bdf8;
-      position: sticky;
-      top: 0;
-    }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: center; }
+    th, td { padding: 8px 6px; border-bottom: 1px solid #334155; }
+    th { background: #0f172a; color: #38bdf8; position: sticky; top: 0; }
   </style>
 </head>
 <body>
 
+  <!-- 학번 4자리 로그인 모달 -->
   <div class="modal-overlay" id="login-modal">
     <div class="modal-box">
       <h3>👋 수학 탐구 대원 등록</h3>
@@ -287,6 +233,7 @@
     <button id="btn-next" style="display: none; background: #22c55e; color: white;">다음 스테이지 ▶</button>
   </div>
 
+  <!-- 퀴즈 모달 -->
   <div class="modal-overlay" id="quiz-modal" style="display: none;">
     <div class="modal-box">
       <h3>📐 힌트 해금 수학 퀴즈</h3>
@@ -299,6 +246,7 @@
     </div>
   </div>
 
+  <!-- 학습 기록 모달 -->
   <div class="modal-overlay" id="records-modal" style="display: none;">
     <div class="modal-box" style="max-width: 520px;">
       <h3>📊 한붓그리기 학습 리포트</h3>
@@ -326,6 +274,7 @@
     </div>
   </div>
 
+  <!-- 최종 제출 모달 -->
   <div class="modal-overlay" id="submit-modal" style="display: none;">
     <div class="modal-box">
       <h3>🚀 선생님께 최종 제출하기</h3>
@@ -344,7 +293,6 @@
   <script>
     const GOOGLE_SHEET_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyU4fpwiJTUsuYGXdFM6tXTstOqVHXyCbKMvZYSVB9gPOFUYvEj_ylu0jh9vHbswMhUIQ/exec";
 
-    // --- 오디오 신디사이저 ---
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
 
@@ -494,7 +442,6 @@
       } catch (e) {}
     }
 
-    // --- 학생 정보 및 진행도 ---
     let currentStudent = { id: "", name: "" };
     const stageRecords = {};
     let unlockedMaxStage = 1;
@@ -540,7 +487,7 @@
     ];
 
     // =========================================================================
-    // 🌟 100개 다채로운 테마 & 기믹 스테이지 엔진
+    // 🌟 [100% 다양성 & 기하학적 완결판] 100개 스테이지 생성기
     // =========================================================================
     const stages = [];
 
@@ -548,33 +495,8 @@
       if (stNum <= 20) return { name: "입문(동물/기초)", cls: "diff-1" };
       if (stNum <= 40) return { name: "초급(사물/기믹)", cls: "diff-2" };
       if (stNum <= 60) return { name: "중급(자연/우주)", cls: "diff-3" };
-      if (stNum <= 80) return { name: "고급(건축/타워)", cls: "diff-4" };
-      return { name: "마스터(입체/프랙탈)", cls: "diff-5" };
-    }
-
-    function validateAndFixEulerian(nodes, edges) {
-      const degrees = new Array(nodes.length).fill(0);
-      edges.forEach(e => {
-        if (e.type !== 2) {
-          degrees[e.u]++;
-          degrees[e.v]++;
-        }
-      });
-
-      let oddNodes = [];
-      degrees.forEach((d, idx) => {
-        if (d % 2 !== 0) oddNodes.push(idx);
-      });
-
-      let curveToggle = 45;
-      while (oddNodes.length > 2) {
-        const u = oddNodes.pop();
-        const v = oddNodes.pop();
-        edges.push({ u, v, curvature: curveToggle, type: 0 });
-        curveToggle = (curveToggle > 0) ? -(curveToggle + 10) : -(curveToggle - 10);
-      }
-
-      return edges;
+      if (stNum <= 80) return { name: "고급(건축/기계)", cls: "diff-4" };
+      return { name: "마스터(4D/프랙탈)", cls: "diff-5" };
     }
 
     function buildDiverseStage(level) {
@@ -648,46 +570,949 @@
         nodes = [{id:0, x:270, y:190}, {id:1, x:150, y:90}, {id:2, x:100, y:210}, {id:3, x:210, y:280}, {id:4, x:390, y:90}, {id:5, x:440, y:210}, {id:6, x:330, y:280}];
         edges = [
           {u:0,v:1},{u:1,v:2, curvature:-20},{u:2,v:3},{u:3,v:0},{u:1,v:3},
-          {u:0,v:4},{u:4,v:5, curvature:20},{u:5,v:6},{u:6,v:0},{u:4,v:6}
+          {u:0,v:4},{u:4,v:5, curvature:20},{u:5,v:6},{u:6,v:0},{u:4,v:6},
+          {u:3,v:6}
         ];
       } else if (level === 12) {
         title = "바다 꽃게의 집게발";
         nodes = [{id:0, x:200, y:230}, {id:1, x:340, y:230}, {id:2, x:270, y:160}, {id:3, x:140, y:110}, {id:4, x:110, y:180}, {id:5, x:400, y:110}, {id:6, x:430, y:180}];
         edges = [
           {u:0,v:1},{u:1,v:2},{u:2,v:0},{u:0,v:3},{u:3,v:4},{u:4,v:0},
-          {u:1,v:5},{u:5,v:6},{u:6,v:1},{u:2,v:3},{u:2,v:5}
+          {u:1,v:5},{u:5,v:6},{u:6,v:1},{u:2,v:3},{u:2,v:5},
+          {u:0,v:1, curvature: 35}
         ];
       } else if (level === 13) {
         title = "일방통행 급류 협곡";
         nodes = [{id:0, x:150, y:190}, {id:1, x:270, y:90}, {id:2, x:390, y:190}, {id:3, x:270, y:290}];
-        edges = [
-          {u:0, v:1, type: 1},
-          {u:1, v:2},
-          {u:2, v:3, type: 1},
-          {u:3, v:0},
-          {u:1, v:3}
-        ];
+        edges = [{u:0, v:1, type: 1}, {u:1, v:2}, {u:2, v:3, type: 1}, {u:3, v:0}, {u:1, v:3}];
       } else if (level === 14) {
         title = "차원 이동 워프 게이트";
         nodes = [{id:0, x:130, y:120}, {id:1, x:230, y:120}, {id:2, x:180, y:230}, {id:3, x:360, y:150}, {id:4, x:460, y:250}, {id:5, x:320, y:290}];
-        edges = [
-          {u:0, v:1}, {u:1, v:2}, {u:2, v:0},
-          {u:2, v:3, type: 2},
-          {u:3, v:4}, {u:4, v:5}, {u:5, v:3}
-        ];
+        edges = [{u:0, v:1}, {u:1, v:2}, {u:2, v:0}, {u:2, v:3, type: 2}, {u:3, v:4}, {u:4, v:5}, {u:5, v:3}];
       } else if (level === 15) {
         title = "아슬아슬 얼음 다리";
         nodes = [{id:0, x:160, y:120}, {id:1, x:380, y:120}, {id:2, x:380, y:270}, {id:3, x:160, y:270}, {id:4, x:270, y:190}];
-        edges = [
-          {u:0, v:1}, {u:1, v:2}, {u:2, v:3}, {u:3, v:0},
-          {u:0, v:4, type: 3},
-          {u:1, v:4}, {u:2, v:4}, {u:3, v:4, type: 3}
-        ];
+        edges = [{u:0, v:1}, {u:1, v:2}, {u:2, v:3}, {u:3, v:0}, {u:0, v:4, type: 3}, {u:1, v:4}, {u:2, v:4}, {u:3, v:4}];
       } else if (level === 16) {
         title = "이중 나선 더블 루프";
         nodes = [{id:0, x:180, y:190}, {id:1, x:360, y:190}, {id:2, x:270, y:80}, {id:3, x:270, y:300}];
+        edges = [{u:0, v:1, curvature: 45}, {u:0, v:1, curvature: -45}, {u:0, v:2}, {u:2, v:1}, {u:1, v:3}, {u:3, v:0}];
+      } else if (level === 17) {
+        title = "바다의 닻 (Anchor)";
+        nodes = [{id:0, x:270, y:70}, {id:1, x:270, y:160}, {id:2, x:270, y:300}, {id:3, x:140, y:240}, {id:4, x:400, y:240}, {id:5, x:190, y:160}, {id:6, x:350, y:160}];
         edges = [
-          {u:0, v:1, curvature: 45}, {u:0, v:1, curvature: -45},
-          {u:0, v:2}, {u:2, v:1}, {u:1, v:3}, {u:3, v:0}
+          {u:0,v:5},{u:5,v:1},{u:1,v:6},{u:6,v:0},{u:0,v:1},
+          {u:1,v:2},{u:2,v:3, curvature:30},{u:3,v:1},{u:2,v:4, curvature:-30},{u:4,v:1},{u:5,v:6}
+        ];
+      } else if (level === 18) {
+        title = "쌍돛단배 (Sailboat)";
+        nodes = [
+          {id:0, x:140, y:280}, {id:1, x:400, y:280}, {id:2, x:350, y:330}, {id:3, x:190, y:330},
+          {id:4, x:270, y:280}, {id:5, x:270, y:70},  {id:6, x:180, y:200}, {id:7, x:360, y:200}
+        ];
+        edges = [
+          {u:0, v:1}, {u:1, v:2}, {u:2, v:3}, {u:3, v:0},
+          {u:4, v:5}, {u:5, v:6}, {u:6, v:4}, {u:6, v:0},
+          {u:5, v:7}, {u:7, v:4}, {u:7, v:1}, {u:0, v:4}, {u:1, v:4}
+        ];
+      } else if (level === 19) {
+        title = "잠자리 날개 (Dragonfly)";
+        nodes = [{id:0, x:270, y:70}, {id:1, x:270, y:330}, {id:2, x:140, y:130}, {id:3, x:130, y:210}, {id:4, x:400, y:130}, {id:5, x:410, y:210}, {id:6, x:270, y:160}];
+        edges = [
+          {u:0,v:6},{u:6,v:1},{u:0,v:2},{u:2,v:6},{u:6,v:3},{u:3,v:1},
+          {u:0,v:4},{u:4,v:6},{u:6,v:5},{u:5,v:1},{u:2,v:3},{u:4,v:5},{u:2,v:4}
+        ];
+      } else if (level === 20) {
+        title = "오일러 마스터 게이트";
+        nodes = [
+          {id:0, x:160, y:100}, {id:1, x:380, y:100}, {id:2, x:440, y:200},
+          {id:3, x:380, y:300}, {id:4, x:160, y:300}, {id:5, x:100, y:200},
+          {id:6, x:270, y:200}
+        ];
+        edges = [
+          {u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:4},{u:4,v:5},{u:5,v:0},
+          {u:0,v:6, isKey:true},{u:1,v:6},{u:2,v:6},{u:3,v:6},{u:4,v:6},{u:5,v:6},
+          {u:0,v:3, curvature:40},{u:1,v:4, curvature:-40}
         ];
       }
+      // 21~40: 일상 사물 & 기계 기하 (우산, 안경, 열쇠, 가위, 헬리콥터, 활, 방패 등)
+      else if (level <= 40) {
+        const themeIdx = (level - 21) % 5;
+        if (themeIdx === 0) {
+          title = `신사의 우산 (Lv.${level})`;
+          nodes = [{id:0,x:270,y:80},{id:1,x:140,y:200},{id:2,x:200,y:200},{id:3,x:270,y:200},{id:4,x:340,y:200},{id:5,x:400,y:200},{id:6,x:270,y:310}];
+          edges = [
+            {u:0,v:1, curvature:-30},{u:0,v:5, curvature:30},{u:1,v:2, curvature:15},{u:2,v:3, curvature:15},
+            {u:3,v:4, curvature:15},{u:4,v:5, curvature:15},{u:0,v:3},{u:3,v:6},{u:0,v:2},{u:0,v:4}
+          ];
+        } else if (themeIdx === 1) {
+          title = `클래식 안경 (Lv.${level})`;
+          nodes = [{id:0,x:150,y:190},{id:1,x:230,y:190},{id:2,x:310,y:190},{id:3,x:390,y:190},{id:4,x:190,y:120},{id:5,x:350,y:120},{id:6,x:190,y:260},{id:7,x:350,y:260}];
+          edges = [
+            {u:0,v:4},{u:4,v:1},{u:1,v:6},{u:6,v:0},{u:1,v:2},{u:2,v:5},{u:5,v:3},{u:3,v:7},{u:7,v:2},
+            {u:0,v:1, curvature: 25},{u:2,v:3, curvature: 25}
+          ];
+        } else if (themeIdx === 2) {
+          title = `비밀의 황금열쇠 (Lv.${level})`;
+          nodes = [{id:0,x:150,y:190},{id:1,x:220,y:150},{id:2,x:220,y:230},{id:3,x:360,y:190},{id:4,x:420,y:190},{id:5,x:360,y:240},{id:6,x:420,y:240}];
+          edges = [
+            {u:0,v:1},{u:1,v:2},{u:2,v:0},{u:0,v:3},{u:3,v:4},{u:3,v:5},{u:4,v:6},{u:1,v:3},{u:2,v:3}
+          ];
+        } else if (themeIdx === 3) {
+          title = `재단사의 가위 (Lv.${level})`;
+          nodes = [{id:0,x:270,y:190},{id:1,x:140,y:110},{id:2,x:140,y:270},{id:3,x:400,y:130},{id:4,x:400,y:250},{id:5,x:440,y:190}];
+          edges = [
+            {u:1,v:0},{u:2,v:0},{u:0,v:3},{u:3,v:5},{u:5,v:4},{u:4,v:0},{u:1,v:2, curvature:-30},{u:1,v:2, curvature:30}
+          ];
+        } else {
+          title = `기사단의 십자방패 (Lv.${level})`;
+          nodes = [{id:0,x:270,y:70},{id:1,x:390,y:120},{id:2,x:360,y:270},{id:3,x:270,y:330},{id:4,x:180,y:270},{id:5,x:150,y:120},{id:6,x:270,y:200}];
+          edges = [
+            {u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:4},{u:4,v:5},{u:5,v:0},
+            {u:0,v:6},{u:3,v:6},{u:5,v:6},{u:1,v:6},{u:0,v:3, curvature: 40}
+          ];
+        }
+      }
+      // 41~60: 자연, 천체 & 우주 (토성 고리, 은하 나선, 다이아몬드 크리스탈, 초신성, 오로라 등)
+      else if (level <= 60) {
+        const themeIdx = (level - 41) % 5;
+        if (themeIdx === 0) {
+          title = `토성의 궤도 링 (Lv.${level})`;
+          nodes = [{id:0,x:270,y:120},{id:1,x:340,y:190},{id:2,x:270,y:260},{id:3,x:200,y:190},{id:4,x:120,y:190},{id:5,x:420,y:190}];
+          edges = [
+            {u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},
+            {u:4,v:0, curvature:-40},{u:0,v:5, curvature:-40},{u:5,v:2, curvature:40},{u:2,v:4, curvature:40},
+            {u:4,v:3},{u:1,v:5}
+          ];
+        } else if (themeIdx === 1) {
+          title = `다이아몬드 결정 (Lv.${level})`;
+          nodes = [{id:0,x:270,y:60},{id:1,x:380,y:140},{id:2,x:420,y:200},{id:3,x:270,y:330},{id:4,x:120,y:200},{id:5,x:160,y:140},{id:6,x:270,y:190}];
+          edges = [
+            {u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:4},{u:4,v:5},{u:5,v:0},
+            {u:5,v:1},{u:4,v:6},{u:6,v:2},{u:0,v:6},{u:6,v:3}
+          ];
+        } else if (themeIdx === 2) {
+          title = `은하 나선 소용돌이 (Lv.${level})`;
+          nodes = [{id:0,x:270,y:190},{id:1,x:270,y:130},{id:2,x:330,y:190},{id:3,x:270,y:250},{id:4,x:210,y:190},{id:5,x:270,y:70},{id:6,x:390,y:190},{id:7,x:270,y:310},{id:8,x:150,y:190}];
+          edges = [
+            {u:0,v:1, curvature:20},{u:1,v:2, curvature:20},{u:2,v:3, curvature:20},{u:3,v:4, curvature:20},{u:4,v:0, curvature:20},
+            {u:1,v:5, curvature:30},{u:2,v:6, curvature:30},{u:3,v:7, curvature:30},{u:4,v:8, curvature:30},
+            {u:5,v:6},{u:6,v:7},{u:7,v:8},{u:8,v:5}
+          ];
+        } else if (themeIdx === 3) {
+          title = `우주 탐사선 아폴로 (Lv.${level})`;
+          nodes = [{id:0,x:270,y:70},{id:1,x:220,y:150},{id:2,x:320,y:150},{id:3,x:220,y:270},{id:4,x:320,y:270},{id:5,x:150,y:320},{id:6,x:390,y:320}];
+          edges = [
+            {u:0,v:1},{u:0,v:2},{u:1,v:2},{u:1,v:3},{u:2,v:4},{u:3,v:4},{u:1,v:4},{u:2,v:3},
+            {u:3,v:5},{u:5,v:4},{u:4,v:6},{u:6,v:3}
+          ];
+        } else {
+          title = `눈송이 결정체 (Lv.${level})`;
+          nodes = [{id:0,x:270,y:190},{id:1,x:270,y:90},{id:2,x:360,y:140},{id:3,x:360,y:240},{id:4,x:270,y:290},{id:5,x:180,y:240},{id:6,x:180,y:140}];
+          edges = [
+            {u:0,v:1},{u:0,v:2},{u:0,v:3},{u:0,v:4},{u:0,v:5},{u:0,v:6},
+            {u:1,v:2},{u:2,v:3},{u:3,v:4},{u:4,v:5},{u:5,v:6},{u:6,v:1}
+          ];
+        }
+      }
+      // 61~80: 세계의 건축 & 메카닉 (에펠탑, 금문교, 피라미드, 풍차, 오페라하우스 등)
+      else if (level <= 80) {
+        const themeIdx = (level - 61) % 5;
+        if (themeIdx === 0) {
+          title = `파리 에펠탑 (Lv.${level})`;
+          nodes = [
+            {id:0,x:270,y:60},{id:1,x:240,y:150},{id:2,x:300,y:150},
+            {id:3,x:200,y:240},{id:4,x:340,y:240},{id:5,x:150,y:330},{id:6,x:390,y:330}
+          ];
+          edges = [
+            {u:0,v:1},{u:0,v:2},{u:1,v:2},{u:1,v:3},{u:2,v:4},{u:3,v:4},{u:1,v:4},{u:2,v:3},
+            {u:3,v:5},{u:4,v:6},{u:5,v:6, curvature:-30},{u:3,v:6},{u:4,v:5}
+          ];
+        } else if (themeIdx === 1) {
+          title = `샌프란시스코 현수교 (Lv.${level})`;
+          nodes = [
+            {id:0,x:120,y:120},{id:1,x:120,y:280},{id:2,x:420,y:120},{id:3,x:420,y:280},
+            {id:4,x:220,y:280},{id:5,x:320,y:280},{id:6,x:270,y:210}
+          ];
+          edges = [
+            {u:0,v:1},{u:2,v:3},{u:1,v:4},{u:4,v:5},{u:5,v:3},
+            {u:0,v:6, curvature:25},{u:6,v:2, curvature:25},{u:0,v:4},{u:2,v:5},{u:4,v:6},{u:5,v:6}
+          ];
+        } else if (themeIdx === 2) {
+          title = `네덜란드 4각 풍차 (Lv.${level})`;
+          nodes = [
+            {id:0,x:270,y:190},{id:1,x:270,y:80},{id:2,x:380,y:190},{id:3,x:270,y:300},{id:4,x:160,y:190},
+            {id:5,x:220,y:110},{id:6,x:350,y:130},{id:7,x:320,y:260},{id:8,x:190,y:240}
+          ];
+          edges = [
+            {u:0,v:1},{u:1,v:5},{u:5,v:0},{u:0,v:2},{u:2,v:6},{u:6,v:0},
+            {u:0,v:3},{u:3,v:7},{u:7,v:0},{u:0,v:4},{u:4,v:8},{u:8,v:0}
+          ];
+        } else if (themeIdx === 3) {
+          title = `사막의 대피라미드 (Lv.${level})`;
+          nodes = [{id:0,x:270,y:80},{id:1,x:150,y:240},{id:2,x:320,y:280},{id:3,x:430,y:210},{id:4,x:250,y:310}];
+          edges = [
+            {u:0,v:1},{u:0,v:2},{u:0,v:3},{u:1,v:4},{u:4,v:2},{u:2,v:3},{u:1,v:2},{u:0,v:4}
+          ];
+        } else {
+          title = `런던아이 대관람차 (Lv.${level})`;
+          const N = 8, R = 110;
+          nodes.push({id:0, x:cx, y:cy});
+          for(let k=0; k<N; k++){
+            const a = -Math.PI/2 + (k*2*Math.PI/N);
+            nodes.push({id:k+1, x: Math.round(cx + R*Math.cos(a)), y: Math.round(cy + R*Math.sin(a))});
+          }
+          for(let k=1; k<=N; k++){
+            edges.push({u:0, v:k});
+            edges.push({u:k, v: (k%N)+1});
+          }
+        }
+      }
+      // 81~100: 4차원 초공간 & 프랙탈 (테서랙트, 뫼비우스, 멩거스펀지 투영, 시에르핀스키 등)
+      else {
+        const themeIdx = (level - 81) % 5;
+        if (themeIdx === 0) {
+          title = `4D 하이퍼 큐브 (Lv.${level})`;
+          nodes = [
+            {id:0,x:150,y:100},{id:1,x:390,y:100},{id:2,x:390,y:280},{id:3,x:150,y:280},
+            {id:4,x:210,y:140},{id:5,x:330,y:140},{id:6,x:330,y:240},{id:7,x:210,y:240}
+          ];
+          edges = [
+            {u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},{u:4,v:5},{u:5,v:6},{u:6,v:7},{u:7,v:4},
+            {u:0,v:4},{u:1,v:5},{u:2,v:6},{u:3,v:7},{u:0,v:6, curvature:35},{u:1,v:7, curvature:-35}
+          ];
+        } else if (themeIdx === 1) {
+          title = `시에르핀스키 트라이앵글 (Lv.${level})`;
+          nodes = [
+            {id:0,x:270,y:60},{id:1,x:150,y:300},{id:2,x:390,y:300},
+            {id:3,x:210,y:180},{id:4,x:330,y:180},{id:5,x:270,y:300}
+          ];
+          edges = [
+            {u:0,v:3},{u:3,v:1},{u:1,v:5},{u:5,v:2},{u:2,v:4},{u:4,v:0},
+            {u:3,v:4},{u:4,v:5},{u:5,v:3},{u:0,v:5}
+          ];
+        } else if (themeIdx === 2) {
+          title = `뫼비우스의 무한 루프 (Lv.${level})`;
+          nodes = [
+            {id:0,x:170,y:190},{id:1,x:270,y:190},{id:2,x:370,y:190},
+            {id:3,x:220,y:120},{id:4,x:320,y:260},{id:5,x:320,y:120},{id:6,x:220,y:260}
+          ];
+          edges = [
+            {u:0,v:3},{u:3,v:1},{u:1,v:4},{u:4,v:2},{u:2,v:5},{u:5,v:1},{u:1,v:6},{u:6,v:0},
+            {u:0,v:1, curvature:35},{u:1,v:2, curvature:-35}
+          ];
+        } else if (themeIdx === 3) {
+          title = `옥타헤드론 다면체 (Lv.${level})`;
+          nodes = [
+            {id:0,x:270,y:70},{id:1,x:400,y:190},{id:2,x:270,y:310},{id:3,x:140,y:190},
+            {id:4,x:230,y:170},{id:5,x:310,y:210}
+          ];
+          edges = [
+            {u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},{u:0,v:4},{u:2,v:4},{u:1,v:5},{u:3,v:5},
+            {u:4,v:5},{u:0,v:2, curvature:40}
+          ];
+        } else {
+          title = `차원 특이점 싱귤래리티 (Lv.${level})`;
+          nodes = [
+            {id:0,x:270,y:190},
+            {id:1,x:270,y:70},{id:2,x:390,y:190},{id:3,x:270,y:310},{id:4,x:150,y:190},
+            {id:5,x:350,y:110},{id:6,x:350,y:270},{id:7,x:190,y:270},{id:8,x:190,y:110}
+          ];
+          edges = [
+            {u:1,v:5},{u:5,v:2},{u:2,v:6},{u:6,v:3},{u:3,v:7},{u:7,v:4},{u:4,v:8},{u:8,v:1},
+            {u:0,v:1},{u:0,v:2},{u:0,v:3},{u:0,v:4},{u:5,v:7},{u:8,v:6}
+          ];
+        }
+      }
+
+      // 기믹 요소 분배
+      if (level > 20 && level % 6 === 0) edges[0].type = 1; // 일방통행
+      if (level > 30 && level % 7 === 0) edges[edges.length - 1].isKey = true; // 황금 필수
+      if (level > 40 && level % 8 === 0) edges[1].type = 3; // 얼음 다리
+      if (level > 50 && level % 9 === 0 && edges.length > 4) edges[2].type = 2; // 워프
+
+      // 홀수점 정밀 보정
+      const degrees = new Array(nodes.length).fill(0);
+      edges.forEach(e => {
+        if (e.type !== 2) { degrees[e.u]++; degrees[e.v]++; }
+      });
+      let oddList = [];
+      degrees.forEach((d, idx) => { if (d % 2 !== 0) oddList.push(idx); });
+
+      let curveVal = 35;
+      while (oddList.length > 2) {
+        const u = oddList.pop();
+        const v = oddList.pop();
+        edges.push({ u, v, curvature: curveVal });
+        curveVal = -curveVal;
+      }
+
+      return { id: level, title, nodes, edges };
+    }
+
+    for (let i = 1; i <= 100; i++) {
+      stages.push(buildDiverseStage(i));
+    }
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const stageSelect = document.getElementById('stage-select');
+    const diffBadge = document.getElementById('diff-badge');
+    const uiRemaining = document.getElementById('ui-remaining');
+    const uiTotal = document.getElementById('ui-total');
+    const uiMsg = document.getElementById('ui-msg');
+    const btnPrev = document.getElementById('btn-prev');
+    const btnReset = document.getElementById('btn-reset');
+    const btnDegree = document.getElementById('btn-degree');
+    const btnQuizHint = document.getElementById('btn-quiz-hint');
+    const btnViewRecords = document.getElementById('btn-view-records');
+    const btnSubmitSheet = document.getElementById('btn-submit-sheet');
+    const btnNext = document.getElementById('btn-next');
+    const displayStudent = document.getElementById('display-student');
+
+    const loginModal = document.getElementById('login-modal');
+    const inputStudentId = document.getElementById('input-student-id');
+    const inputStudentName = document.getElementById('input-student-name');
+    const btnStartGame = document.getElementById('btn-start-game');
+
+    const recordsModal = document.getElementById('records-modal');
+    const recordsTableBody = document.getElementById('records-table-body');
+    const recordStudentInfo = document.getElementById('record-student-info');
+    const recordClearCount = document.getElementById('record-clear-count');
+    const btnRecordsClose = document.getElementById('btn-records-close');
+    const btnExportCsv = document.getElementById('btn-export-csv');
+
+    const quizModal = document.getElementById('quiz-modal');
+    const quizQuestion = document.getElementById('quiz-question');
+    const quizAnswer = document.getElementById('quiz-answer');
+    const btnQuizSubmit = document.getElementById('btn-quiz-submit');
+    const btnQuizCancel = document.getElementById('btn-quiz-cancel');
+
+    const submitModal = document.getElementById('submit-modal');
+    const submitSummary = document.getElementById('submit-summary');
+    const submitComment = document.getElementById('submit-comment');
+    const btnSubmitCancel = document.getElementById('btn-submit-cancel');
+    const btnSubmitConfirm = document.getElementById('btn-submit-confirm');
+
+    function updateStageSelectOptions() {
+      stageSelect.innerHTML = "";
+      stages.forEach((st) => {
+        const opt = document.createElement('option');
+        opt.value = st.id - 1;
+        const isLocked = (st.id <= 20) ? (st.id > unlockedMaxStage) : (unlockedMaxStage < 20);
+
+        if (isLocked) {
+          opt.innerText = `🔒 Stage ${st.id} (잠김)`;
+          opt.disabled = true;
+        } else {
+          opt.innerText = `Stage ${st.id}: ${st.title}`;
+          opt.disabled = false;
+        }
+        stageSelect.appendChild(opt);
+      });
+      stageSelect.value = currentStageIndex;
+    }
+
+    let currentStageIndex = 0;
+    let currentNode = null;
+    let visitedEdges = [];
+    let isDrawing = false;
+    let isCleared = false;
+    let showDegrees = false;
+    let pointerPos = { x: 0, y: 0 };
+    let strokeSamples = []; // 드래그 궤적 샘플링
+    let currentQuiz = null;
+
+    function handleLogin() {
+      const sid = inputStudentId.value.trim();
+      const sname = inputStudentName.value.trim();
+
+      if (!/^\d{4}$/.test(sid)) {
+        alert("학번은 4자리 숫자로 입력해주세요! (예: 1105)");
+        inputStudentId.focus();
+        return;
+      }
+      if (!sname) {
+        alert("이름을 입력해주세요!");
+        inputStudentName.focus();
+        return;
+      }
+
+      currentStudent.id = sid;
+      currentStudent.name = sname;
+      displayStudent.innerText = `대원: ${sid} ${sname}`;
+      loginModal.style.display = 'none';
+
+      getAudioContext();
+      updateStageSelectOptions();
+      initStage(0);
+    }
+
+    btnStartGame.addEventListener('click', handleLogin);
+    inputStudentId.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') inputStudentName.focus();
+    });
+    inputStudentName.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleLogin();
+    });
+
+    function initStage(idx) {
+      currentStageIndex = Math.max(0, Math.min(idx, stages.length - 1));
+      updateStageSelectOptions();
+      
+      const diff = getDiffInfo(currentStageIndex + 1);
+      diffBadge.innerText = diff.name;
+      diffBadge.className = `difficulty-tag ${diff.cls}`;
+
+      resetStroke();
+      const stage = stages[currentStageIndex];
+      const regularEdges = stage.edges.filter(e => e.type !== 2);
+      uiTotal.innerText = regularEdges.length;
+      btnNext.style.display = 'none';
+      btnPrev.disabled = (currentStageIndex === 0);
+
+      startTimer();
+      render();
+    }
+
+    function resetStroke(failMsg = null) {
+      currentNode = null;
+      visitedEdges = [];
+      strokeSamples = [];
+      isDrawing = false;
+      isCleared = false;
+      updateUI();
+
+      if (failMsg) {
+        uiMsg.innerText = failMsg;
+        uiMsg.style.color = "#f87171";
+      } else {
+        const stage = stages[currentStageIndex];
+        const hasKey = stage.edges.some(e => e.isKey);
+        const hasWarp = stage.edges.some(e => e.type === 2);
+        const hasIce = stage.edges.some(e => e.type === 3);
+
+        let desc = "꼭짓점을 꾹 누르고 손을 떼지 않은 채 모든 선을 그리세요!";
+        if (hasKey) desc = "⭐ 황금 필수 다리를 반드시 지나서 완성하세요!";
+        else if (hasWarp) desc = "🌀 보라색 점선 포털을 타고 순간이동해보세요!";
+        else if (hasIce) desc = "❄️ 하늘색 얼음 다리는 건너면 깨져 사라집니다!";
+
+        uiMsg.innerText = desc;
+        uiMsg.style.color = hasKey ? "#facc15" : "#94a3b8";
+      }
+      render();
+    }
+
+    function updateUI() {
+      const stage = stages[currentStageIndex];
+      const regularEdges = stage.edges.filter(e => e.type !== 2);
+      const visitedRegular = visitedEdges.filter(idx => stage.edges[idx].type !== 2);
+      uiRemaining.innerText = regularEdges.length - visitedRegular.length;
+    }
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    function findNodeAt(x, y) {
+      const stage = stages[currentStageIndex];
+      return stage.nodes.find(n => Math.hypot(n.x - x, n.y - y) <= 22);
+    }
+
+    function getNodeDegree(nodeId) {
+      const stage = stages[currentStageIndex];
+      return stage.edges.filter(e => (e.u === nodeId || e.v === nodeId) && e.type !== 2).length;
+    }
+
+    // =========================================================================
+    // 🎯 [정밀 곡선 판정 엔진: 오터치 완벽 해결]
+    // =========================================================================
+    function getDistanceToEdge(edge, pX, pY) {
+      const stage = stages[currentStageIndex];
+      const u = stage.nodes[edge.u];
+      const v = stage.nodes[edge.v];
+      const curvature = edge.curvature || 0;
+
+      if (curvature === 0) {
+        const dx = v.x - u.x;
+        const dy = v.y - u.y;
+        const l2 = dx*dx + dy*dy;
+        if (l2 === 0) return Math.hypot(pX - u.x, pY - u.y);
+        let t = ((pX - u.x)*dx + (pY - u.y)*dy) / l2;
+        t = Math.max(0, Math.min(1, t));
+        return Math.hypot(pX - (u.x + t*dx), pY - (u.y + t*dy));
+      } else {
+        const midX = (u.x + v.x) / 2;
+        const midY = (u.y + v.y) / 2;
+        const dx = v.x - u.x;
+        const dy = v.y - u.y;
+        const len = Math.hypot(dx, dy);
+        const nx = -dy / len;
+        const ny = dx / len;
+        const ctrlX = midX + nx * curvature;
+        const ctrlY = midY + ny * curvature;
+
+        let minDist = Infinity;
+        for (let t = 0.1; t <= 0.9; t += 0.1) {
+          const inv = 1 - t;
+          const qx = inv*inv*u.x + 2*inv*t*ctrlX + t*t*v.x;
+          const qy = inv*inv*u.y + 2*inv*t*ctrlY + t*t*v.y;
+          const d = Math.hypot(pX - qx, pY - qy);
+          if (d < minDist) minDist = d;
+        }
+        return minDist;
+      }
+    }
+
+    function onStart(e) {
+      if (isCleared) return;
+      getAudioContext();
+      const pos = getPos(e);
+      pointerPos = pos;
+      const node = findNodeAt(pos.x, pos.y);
+
+      if (node) {
+        isDrawing = true;
+        currentNode = node;
+        visitedEdges = [];
+        strokeSamples = [pos];
+        soundPass(0);
+        uiMsg.innerText = "선을 따라 다음 점으로 드래그하세요!";
+        uiMsg.style.color = "#38bdf8";
+        updateUI();
+        render();
+      }
+    }
+
+    function onMove(e) {
+      if (!isDrawing || isCleared || !currentNode) return;
+      pointerPos = getPos(e);
+      strokeSamples.push(pointerPos);
+
+      const targetNode = findNodeAt(pointerPos.x, pointerPos.y);
+      if (targetNode && targetNode.id !== currentNode.id) {
+        const stage = stages[currentStageIndex];
+        
+        const candidateIndices = [];
+        stage.edges.forEach((edge, idx) => {
+          if (visitedEdges.includes(idx)) return;
+
+          if (edge.type === 1) { // 일방통행
+            if (edge.u === currentNode.id && edge.v === targetNode.id) candidateIndices.push(idx);
+          } else {
+            if ((edge.u === currentNode.id && edge.v === targetNode.id) ||
+                (edge.v === currentNode.id && edge.u === targetNode.id)) {
+              candidateIndices.push(idx);
+            }
+          }
+        });
+
+        if (candidateIndices.length > 0) {
+          let chosenIndex = candidateIndices[0];
+
+          // 후보 선이 2개 이상일 때, 손가락 궤적과의 평균 거리로 정확히 판정
+          if (candidateIndices.length > 1) {
+            let minAvgDist = Infinity;
+            const midSample = strokeSamples[Math.floor(strokeSamples.length / 2)] || pointerPos;
+
+            candidateIndices.forEach(idx => {
+              const edge = stage.edges[idx];
+              const dist = getDistanceToEdge(edge, midSample.x, midSample.y);
+              if (dist < minAvgDist) {
+                minAvgDist = dist;
+                chosenIndex = idx;
+              }
+            });
+          }
+
+          const crossedEdge = stage.edges[chosenIndex];
+          visitedEdges.push(chosenIndex);
+          currentNode = targetNode;
+          strokeSamples = [pointerPos]; // 새 노드에서 궤적 초기화
+          
+          if (crossedEdge.isKey) soundKeyPassed();
+          else if (crossedEdge.type === 2) soundWarp();
+          else if (crossedEdge.type === 3) soundIceCrack();
+          else soundPass(visitedEdges.length);
+          
+          updateUI();
+
+          const regularEdges = stage.edges.filter(e => e.type !== 2);
+          const visitedRegular = visitedEdges.filter(idx => stage.edges[idx].type !== 2);
+
+          if (visitedRegular.length === regularEdges.length) {
+            const hasMissedKey = stage.edges.some((e, idx) => e.isKey && !visitedEdges.includes(idx));
+            
+            if (hasMissedKey) {
+              soundFail();
+              resetStroke("❌ 필수 황금 다리를 건너지 않았습니다!");
+            } else {
+              isCleared = true;
+              isDrawing = false;
+              stopTimer();
+              soundWin();
+
+              const curStageId = stage.id;
+              const formatted = formatTime(stageElapsedSeconds);
+
+              if (!stageRecords[curStageId] || stageElapsedSeconds < stageRecords[curStageId].timeSeconds) {
+                stageRecords[curStageId] = {
+                  cleared: true,
+                  timeSeconds: stageElapsedSeconds
+                };
+              }
+
+              if (curStageId === unlockedMaxStage && unlockedMaxStage < 100) {
+                unlockedMaxStage++;
+                updateStageSelectOptions();
+              }
+
+              uiMsg.innerText = `🎉 Stage ${stage.id} 성공! (기록: ${formatted})`;
+              uiMsg.style.color = "#4ade80";
+              if (currentStageIndex < stages.length - 1) {
+                btnNext.style.display = 'inline-block';
+              }
+            }
+          }
+        }
+      }
+      render();
+    }
+
+    function onEnd() {
+      if (isCleared) return;
+      if (isDrawing) {
+        isDrawing = false;
+        soundFail();
+        resetStroke("❌ 손을 뗐습니다! 한붓그리기는 도중에 손을 떼면 안 됩니다.");
+      }
+    }
+
+    canvas.addEventListener('mousedown', onStart);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onEnd);
+
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); onStart(e); }, { passive: false });
+    window.addEventListener('touchmove', (e) => { onMove(e); }, { passive: false });
+    window.addEventListener('touchend', onEnd);
+
+    stageSelect.addEventListener('change', (e) => initStage(parseInt(e.target.value)));
+    btnPrev.addEventListener('click', () => {
+      if (currentStageIndex > 0) initStage(currentStageIndex - 1);
+    });
+    btnNext.addEventListener('click', () => {
+      if (currentStageIndex < stages.length - 1) initStage(currentStageIndex + 1);
+    });
+    btnReset.addEventListener('click', () => resetStroke());
+    btnDegree.addEventListener('click', () => {
+      showDegrees = !showDegrees;
+      btnDegree.classList.toggle('toggle-active', showDegrees);
+      render();
+    });
+
+    // --- 최종 제출 로직 ---
+    let pendingSubmissionData = null;
+
+    btnSubmitSheet.addEventListener('click', () => {
+      const clearedIds = Object.keys(stageRecords)
+        .map(Number)
+        .filter(id => stageRecords[id].cleared)
+        .sort((a, b) => a - b);
+
+      if (clearedIds.length === 0) {
+        alert("아직 클리어한 스테이지가 없습니다! 한 단계 이상 성공한 후 제출해주세요.");
+        return;
+      }
+
+      const maxStage = Math.max(...clearedIds);
+      const clearCount = clearedIds.length;
+      const clearedListStr = clearedIds.join(", ");
+      const totalSeconds = clearedIds.reduce((sum, id) => sum + stageRecords[id].timeSeconds, 0);
+      const totalFormatted = formatTime(totalSeconds);
+
+      pendingSubmissionData = {
+        studentId: currentStudent.id,
+        studentName: currentStudent.name,
+        maxStage: `Lv.${maxStage}`,
+        clearCount: `${clearCount} / 100`,
+        clearedList: clearedListStr,
+        totalFormatted: totalFormatted
+      };
+
+      submitSummary.innerHTML = `
+        <div>👤 <b>대원:</b> ${currentStudent.id} ${currentStudent.name}</div>
+        <div>🏆 <b>최종 도달:</b> Lv.${maxStage} (총 ${clearCount}개 클리어)</div>
+        <div>📋 <b>성공 스테이지:</b> Lv. ${clearedListStr}</div>
+        <div>⏱️ <b>총 소요시간:</b> ${totalFormatted}</div>
+      `;
+      submitComment.value = "";
+      submitModal.style.display = "flex";
+      submitComment.focus();
+    });
+
+    btnSubmitCancel.addEventListener('click', () => {
+      submitModal.style.display = "none";
+    });
+
+    btnSubmitConfirm.addEventListener('click', () => {
+      if (!pendingSubmissionData) return;
+
+      btnSubmitConfirm.disabled = true;
+      btnSubmitConfirm.innerText = "제출 전송 중... ⏳";
+
+      const finalPayload = {
+        studentId: currentStudent.id,
+        studentName: currentStudent.name,
+        maxStage: pendingSubmissionData.maxStage,
+        clearCount: pendingSubmissionData.clearCount,
+        clearedList: pendingSubmissionData.clearedList,
+        totalFormatted: pendingSubmissionData.totalFormatted,
+        comment: submitComment.value.trim()
+      };
+
+      fetch(GOOGLE_SHEET_WEBAPP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(finalPayload)
+      })
+      .then(() => {
+        alert("🎉 선생님께 성공적으로 제출되었습니다!");
+        submitModal.style.display = "none";
+        btnSubmitSheet.disabled = true;
+        btnSubmitSheet.innerText = "✅ 제출 완료됨";
+      })
+      .catch(err => {
+        alert("전송 중 오류가 발생했습니다. 다시 시도해주세요.");
+        btnSubmitConfirm.disabled = false;
+        btnSubmitConfirm.innerText = "제출 완료하기 ✨";
+      });
+    });
+
+    btnViewRecords.addEventListener('click', () => {
+      recordStudentInfo.innerText = `학번: ${currentStudent.id} | 성명: ${currentStudent.name}`;
+      const clearedCount = Object.values(stageRecords).filter(r => r.cleared).length;
+      recordClearCount.innerText = `클리어: ${clearedCount} / ${stages.length}`;
+
+      recordsTableBody.innerHTML = "";
+      stages.forEach((st) => {
+        const tr = document.createElement('tr');
+        const rec = stageRecords[st.id];
+        const isClr = rec && rec.cleared;
+        const diff = getDiffInfo(st.id);
+
+        tr.innerHTML = `
+          <td>Stage ${st.id}</td>
+          <td><span class="difficulty-tag ${diff.cls}">${diff.name}</span></td>
+          <td style="color: ${isClr ? '#4ade80' : '#64748b'}; font-weight: bold;">
+            ${isClr ? 'SUCCESS' : '-'}
+          </td>
+          <td style="font-family: monospace; color: ${isClr ? '#facc15' : '#64748b'};">
+            ${isClr ? formatTime(rec.timeSeconds) : '--:--'}
+          </td>
+        `;
+        recordsTableBody.appendChild(tr);
+      });
+
+      recordsModal.style.display = "flex";
+    });
+
+    btnRecordsClose.addEventListener('click', () => {
+      recordsModal.style.display = "none";
+    });
+
+    btnExportCsv.addEventListener('click', () => {
+      let csvContent = "\uFEFF";
+      csvContent += "학번,이름,스테이지,난이도,성공여부,소요시간\n";
+
+      stages.forEach((st) => {
+        const rec = stageRecords[st.id];
+        const isClr = rec && rec.cleared ? "완료" : "미완료";
+        const formatted = rec && rec.cleared ? formatTime(rec.timeSeconds) : "";
+        const diff = getDiffInfo(st.id).name;
+
+        csvContent += `"${currentStudent.id}","${currentStudent.name}",${st.id},"${diff}","${isClr}","${formatted}"\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `한붓그리기_${currentStudent.id}_${currentStudent.name}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    btnQuizHint.addEventListener('click', () => {
+      currentQuiz = quizPool[Math.floor(Math.random() * quizPool.length)];
+      quizQuestion.innerText = currentQuiz.q;
+      quizAnswer.value = "";
+      quizModal.style.display = "flex";
+      quizAnswer.focus();
+    });
+
+    btnQuizCancel.addEventListener('click', () => {
+      quizModal.style.display = "none";
+    });
+
+    btnQuizSubmit.addEventListener('click', () => {
+      const userAns = quizAnswer.value.trim();
+      if (userAns === currentQuiz.a) {
+        quizModal.style.display = "none";
+        const stage = stages[currentStageIndex];
+        let oddCount = 0;
+        const oddNodes = [];
+        stage.nodes.forEach(n => {
+          if (getNodeDegree(n.id) % 2 !== 0) {
+            oddCount++;
+            oddNodes.push(n.id);
+          }
+        });
+
+        let hintStr = `정답입니다! 🎉 힌트가 해금되었습니다.\n\n`;
+        if (oddCount === 0) {
+          hintStr += `💡 [오일러 회로] 모든 꼭짓점이 짝수점입니다. 어느 점에서 시작해도 제자리로 돌아오며 완성할 수 있습니다.`;
+        } else if (oddCount === 2) {
+          hintStr += `💡 [오일러 경로] 홀수점이 꼭짓점 [${oddNodes.join(', ')}번] 2개 있습니다. 반드시 이 점들 중 하나에서 시작해야만 성공합니다!`;
+        } else {
+          hintStr += `💡 홀수점이 ${oddCount}개로 일반적인 한붓그리기가 불가능한 구조입니다.`;
+        }
+        alert(hintStr);
+      } else {
+        alert("아쉽네요! 정답이 아닙니다. 다시 시도해보세요. 💡");
+      }
+    });
+
+    quizAnswer.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') btnQuizSubmit.click();
+    });
+
+    function drawEdge(u, v, curvature, isVisited, edge) {
+      ctx.beginPath();
+      ctx.lineWidth = isVisited ? 6 : (edge.isKey ? 5 : 3.5);
+      
+      if (isVisited) {
+        ctx.strokeStyle = '#38bdf8';
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = 8;
+        ctx.setLineDash([]);
+      } else if (edge.isKey) {
+        ctx.strokeStyle = '#facc15';
+        ctx.shadowColor = '#eab308';
+        ctx.shadowBlur = 10;
+        ctx.setLineDash([]);
+      } else if (edge.type === 1) {
+        ctx.strokeStyle = '#fb923c';
+        ctx.shadowBlur = 0;
+        ctx.setLineDash([]);
+      } else if (edge.type === 2) {
+        ctx.strokeStyle = '#c084fc';
+        ctx.shadowColor = '#a855f7';
+        ctx.shadowBlur = 6;
+        ctx.setLineDash([6, 6]);
+      } else if (edge.type === 3) {
+        ctx.strokeStyle = '#67e8f9';
+        ctx.shadowColor = '#22d3ee';
+        ctx.shadowBlur = 6;
+        ctx.setLineDash([]);
+      } else {
+        ctx.strokeStyle = '#334155';
+        ctx.shadowBlur = 0;
+        ctx.setLineDash([]);
+      }
+      ctx.lineCap = 'round';
+
+      let midX = (u.x + v.x) / 2;
+      let midY = (u.y + v.y) / 2;
+      let ctrlX = midX, ctrlY = midY;
+
+      if (!curvature) {
+        ctx.moveTo(u.x, u.y);
+        ctx.lineTo(v.x, v.y);
+      } else {
+        const dx = v.x - u.x;
+        const dy = v.y - u.y;
+        const len = Math.hypot(dx, dy);
+        const nx = -dy / len;
+        const ny = dx / len;
+
+        ctrlX = midX + nx * curvature;
+        ctrlY = midY + ny * curvature;
+
+        ctx.moveTo(u.x, u.y);
+        ctx.quadraticCurveTo(ctrlX, ctrlY, v.x, v.y);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.shadowBlur = 0;
+
+      if (edge.type === 1 && !isVisited) {
+        const arrowX = curvature ? (u.x + 2 * ctrlX + v.x) / 4 : midX;
+        const arrowY = curvature ? (u.y + 2 * ctrlY + v.y) / 4 : midY;
+        const angle = Math.atan2(v.y - u.y, v.x - u.x);
+
+        ctx.save();
+        ctx.translate(arrowX, arrowY);
+        ctx.rotate(angle);
+        ctx.fillStyle = '#fb923c';
+        ctx.beginPath();
+        ctx.moveTo(8, 0); ctx.lineTo(-6, -6); ctx.lineTo(-6, 6);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const stage = stages[currentStageIndex];
+
+      stage.edges.forEach((edge, idx) => {
+        if (!visitedEdges.includes(idx)) {
+          drawEdge(stage.nodes[edge.u], stage.nodes[edge.v], edge.curvature, false, edge);
+        }
+      });
+
+      visitedEdges.forEach((edgeIdx) => {
+        const edge = stage.edges[edgeIdx];
+        drawEdge(stage.nodes[edge.u], stage.nodes[edge.v], edge.curvature, true, edge);
+      });
+
+      if (isDrawing && currentNode) {
+        ctx.beginPath();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#facc15';
+        ctx.setLineDash([5, 5]);
+        ctx.moveTo(currentNode.x, currentNode.y);
+        ctx.lineTo(pointerPos.x, pointerPos.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      stage.nodes.forEach((node) => {
+        const isCurrent = currentNode && currentNode.id === node.id;
+        const deg = getNodeDegree(node.id);
+        const isOdd = deg % 2 !== 0;
+
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, 14, 0, Math.PI * 2);
+        ctx.fillStyle = isCurrent ? '#f43f5e' : (showDegrees && isOdd ? '#e11d48' : '#1e293b');
+        ctx.fill();
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = isCurrent ? '#ffffff' : (showDegrees && isOdd ? '#fda4af' : '#64748b');
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(showDegrees ? `${deg}` : `${node.id}`, node.x, node.y);
+      });
+    }
+  </script>
+</body>
+</html>
