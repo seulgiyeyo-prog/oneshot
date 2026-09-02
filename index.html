@@ -83,23 +83,27 @@
       position: relative;
       border-radius: 16px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-      background: #111827;
-      border: 2px solid #1f2937;
+      background: #0d1527;
+      border: 3px solid #38bdf8;
       overflow: hidden;
       max-width: 100%;
+      margin: 4px 0;
     }
     canvas { 
       display: block; 
       cursor: crosshair; 
       touch-action: none;
+      background-color: #0d1527;
+      width: 680px;
+      height: 500px;
       max-width: 100%;
       height: auto;
     }
     .guide-text {
       margin-top: 10px;
-      font-size: 14px;
+      font-size: 15px;
       font-weight: bold;
-      min-height: 22px;
+      min-height: 24px;
       text-align: center;
       color: #94a3b8;
       max-width: 680px;
@@ -153,7 +157,7 @@
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0, 0, 0, 0.88);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -209,7 +213,7 @@
       <h3>👋 수학 탐구 대원 등록</h3>
       <p style="font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 16px;">
         학번과 이름을 입력하세요.<br>
-        <span style="color: #4ade80;">⭐ 동일한 학번/이름으로 접속 시 이전 기록이 자동 복원됩니다.</span>
+        <span style="color: #4ade80;">⭐ 동일한 학번/이름으로 재접속 시 성공 기록이 자동 복원됩니다.</span>
       </p>
       <input type="text" id="input-student-id" class="input-field" placeholder="학번 입력 (예: 1105)" onkeydown="if(event.key==='Enter') document.getElementById('input-student-name').focus();">
       <input type="text" id="input-student-name" class="input-field" placeholder="이름 입력 (예: 홍길동)" onkeydown="if(event.key==='Enter') handleLogin();">
@@ -431,36 +435,36 @@
 
       if (level === 1) {
         title = "정삼각형 삼각망";
-        nodes = [{id:0,x:340,y:100},{id:1,x:180,y:390},{id:2,x:500,y:390}];
+        nodes = [{id:0,x:340,y:90},{id:1,x:170,y:390},{id:2,x:510,y:390}];
         edges = [{u:0,v:1},{u:1,v:2},{u:2,v:0}];
       } else if (level === 2) {
         title = "오일러의 집";
-        nodes = [{id:0,x:200,y:390},{id:1,x:480,y:390},{id:2,x:480,y:230},{id:3,x:200,y:230},{id:4,x:340,y:100}];
+        nodes = [{id:0,x:190,y:390},{id:1,x:490,y:390},{id:2,x:490,y:220},{id:3,x:190,y:220},{id:4,x:340,y:90}];
         edges = [{u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},{u:0,v:2},{u:1,v:3},{u:3,v:4},{u:4,v:2}];
       } else if (level === 3) {
         title = "모래시계 리본";
-        nodes = [{id:0,x:200,y:120},{id:1,x:480,y:120},{id:2,x:340,y:250},{id:3,x:200,y:380},{id:4,x:480,y:380}];
+        nodes = [{id:0,x:190,y:110},{id:1,x:490,y:110},{id:2,x:340,y:250},{id:3,x:190,y:390},{id:4,x:490,y:390}];
         edges = [{u:0,v:1},{u:1,v:2},{u:2,v:0},{u:2,v:3},{u:3,v:4},{u:4,v:2}];
       } else if (level === 4) {
         title = "다이아몬드 크로스";
-        nodes = [{id:0,x:340,y:80},{id:1,x:520,y:250},{id:2,x:340,y:420},{id:3,x:160,y:250},{id:4,x:340,y:250}];
+        nodes = [{id:0,x:340,y:70},{id:1,x:530,y:250},{id:2,x:340,y:430},{id:3,x:150,y:250},{id:4,x:340,y:250}];
         edges = [{u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0},{u:0,v:4},{u:1,v:4},{u:2,v:4},{u:3,v:4}];
       } else if (level === 5) {
         title = "금붕어 유영";
-        nodes = [{id:0,x:140,y:250},{id:1,x:300,y:140},{id:2,x:300,y:360},{id:3,x:460,y:250},{id:4,x:560,y:140},{id:5,x:560,y:360}];
+        nodes = [{id:0,x:130,y:250},{id:1,x:290,y:130},{id:2,x:290,y:370},{id:3,x:450,y:250},{id:4,x:570,y:130},{id:5,x:570,y:370}];
         edges = [{u:0,v:1},{u:0,v:2},{u:1,v:3},{u:2,v:3},{u:1,v:2},{u:3,v:4},{u:4,v:5},{u:5,v:3}];
       } else if (level === 7) {
         title = "쾨니히스베르크 다리 (불가)";
-        nodes = [{id:0,x:340,y:100},{id:1,x:180,y:250},{id:2,x:500,y:250},{id:3,x:340,y:400}];
+        nodes = [{id:0,x:340,y:90},{id:1,x:170,y:250},{id:2,x:510,y:250},{id:3,x:340,y:410}];
         edges = [
-          {u:0,v:1,curvature:-30},{u:0,v:1,curvature:30},
+          {u:0,v:1,curvature:-35},{u:0,v:1,curvature:35},
           {u:0,v:2},{u:1,v:2},
-          {u:1,v:3,curvature:-30},{u:1,v:3,curvature:30},{u:2,v:3}
+          {u:1,v:3,curvature:-35},{u:1,v:3,curvature:35},{u:2,v:3}
         ];
       } else if (level <= 20) {
         const sides = 3 + (level % 5);
         title = `정${sides}각 다이어그램 (Lv.${level})`;
-        const R = 150;
+        const R = 160;
         for (let k = 0; k < sides; k++) {
           const a = -Math.PI / 2 + (k * 2 * Math.PI / sides);
           nodes.push({ id: k, x: Math.round(cx + R * Math.cos(a)), y: Math.round(cy + R * Math.sin(a)) });
@@ -472,7 +476,7 @@
       } else if (level <= 50) {
         const spokes = 5 + (level % 6);
         title = `${spokes}방향 스포크 휠 (Lv.${level})`;
-        const R = 155;
+        const R = 165;
         nodes.push({ id: 0, x: cx, y: cy });
         for (let k = 0; k < spokes; k++) {
           const a = -Math.PI / 2 + (k * 2 * Math.PI / spokes);
@@ -483,7 +487,7 @@
       } else {
         const N = 4 + (level % 5);
         title = `${N}각 다차원 위상망 (Lv.${level})`;
-        const R1 = 75, R2 = 155;
+        const R1 = 80, R2 = 165;
         for (let k = 0; k < N; k++) {
           const a = -Math.PI / 2 + (k * 2 * Math.PI / N);
           nodes.push({ id: k, x: Math.round(cx + R1 * Math.cos(a)), y: Math.round(cy + R1 * Math.sin(a)) });
@@ -543,7 +547,6 @@
       document.getElementById('login-modal').style.display = 'flex';
     }
 
-    // 핵심: 확실하게 닫히고 시작되는 로그인 처리
     function handleLogin() {
       const idInput = document.getElementById('input-student-id');
       const nameInput = document.getElementById('input-student-name');
@@ -561,10 +564,8 @@
         return;
       }
 
-      // 모달 창 닫기
       document.getElementById('login-modal').style.display = 'none';
 
-      // 데이터 로드
       const isExisting = loadStudentData(sid, sname);
       document.getElementById('display-student').innerText = `대원: ${sid} ${sname} (변경)`;
 
@@ -630,7 +631,12 @@
       }
 
       startTimer();
+      
+      // 캔버스 버퍼 강제 동기화 후 즉각 렌더링
+      canvas.width = 680;
+      canvas.height = 500;
       render();
+      window.requestAnimationFrame(render);
     }
 
     function getPos(e) {
@@ -647,7 +653,7 @@
 
     function findNodeAt(x, y) {
       const stage = stages[currentStageIndex];
-      return stage.nodes.find(n => Math.hypot(n.x - x, n.y - y) <= 34);
+      return stage.nodes.find(n => Math.hypot(n.x - x, n.y - y) <= 36);
     }
 
     function getNodeDegree(nodeId) {
@@ -778,7 +784,6 @@
     canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handlePointerDown(e); }, { passive: false });
     window.addEventListener('touchmove', (e) => { e.preventDefault(); handlePointerMove(e); }, { passive: false });
 
-    // 퀴즈 모달
     function openQuizModal() {
       currentQuiz = quizPool[Math.floor(Math.random() * quizPool.length)];
       document.getElementById('quiz-question').innerText = currentQuiz.q;
@@ -807,7 +812,6 @@
       }
     }
 
-    // 기록 및 CSV
     function openRecordsModal() {
       document.getElementById('record-student-info').innerText = `학번: ${currentStudent.id} | 성명: ${currentStudent.name}`;
       const clrCount = Object.values(stageRecords).filter(r => r.cleared).length;
@@ -833,7 +837,7 @@
     }
 
     function resetCurrentStudentData() {
-      if (confirm(`대원 [${currentStudent.id} ${currentStudent.name}]의 모든 기록을 초기화하시겠습니까?`)) {
+      if (confirm(`대원 [${currentStudent.id} ${currentStudent.name}]의 기록을 초기화하시겠습니까?`)) {
         localStorage.removeItem(getStorageKey(currentStudent.id, currentStudent.name));
         stageRecords = {};
         currentStageIndex = 0;
@@ -858,7 +862,6 @@
       link.click();
     }
 
-    // 구글 시트 제출
     let pendingData = null;
     function openSubmitModal() {
       const clearedIds = Object.keys(stageRecords).map(Number).filter(id => stageRecords[id].cleared).sort((a,b)=>a-b);
@@ -915,14 +918,18 @@
       });
     }
 
+    // 🌟 [또렷한 고대비 그래픽 렌더링 엔진]
     function drawEdge(u, v, curvature, isVisited) {
       ctx.beginPath();
-      ctx.lineWidth = isVisited ? 7 : 4;
-      ctx.strokeStyle = isVisited ? '#38bdf8' : '#334155';
+      ctx.lineWidth = isVisited ? 8 : 5;
+      
+      // 미방문 선도 뚜렷하게 보이도록 밝은 슬레이트 블루(#94a3b8) 적용
       if (isVisited) {
+        ctx.strokeStyle = '#38bdf8';
         ctx.shadowColor = '#38bdf8';
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 12;
       } else {
+        ctx.strokeStyle = '#64748b';
         ctx.shadowBlur = 0;
       }
       ctx.lineCap = 'round';
@@ -936,8 +943,12 @@
         const dx = v.x - u.x;
         const dy = v.y - u.y;
         const len = Math.hypot(dx, dy);
-        const ctrlX = midX + (-dy / len) * curvature;
-        const ctrlY = midY + (dx / len) * curvature;
+        const nx = -dy / len;
+        const ny = dx / len;
+
+        const ctrlX = midX + nx * curvature;
+        const ctrlY = midY + ny * curvature;
+
         ctx.moveTo(u.x, u.y);
         ctx.quadraticCurveTo(ctrlX, ctrlY, v.x, v.y);
       }
@@ -946,23 +957,30 @@
     }
 
     function render() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const stage = stages[currentStageIndex];
+      // 짙은 캔버스 배경 클리어
+      ctx.fillStyle = "#0d1527";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+      const stage = stages[currentStageIndex];
+      if (!stage) return;
+
+      // 1. 미방문 선 그리기
       stage.edges.forEach((edge, idx) => {
         if (!visitedEdges.includes(idx)) {
           drawEdge(stage.nodes[edge.u], stage.nodes[edge.v], edge.curvature, false);
         }
       });
 
+      // 2. 이미 지나간 선 그리기 (밝은 네온 블루)
       visitedEdges.forEach((edgeIdx) => {
         const edge = stage.edges[edgeIdx];
         drawEdge(stage.nodes[edge.u], stage.nodes[edge.v], edge.curvature, true);
       });
 
+      // 3. 현재 마우스/터치 위치 가이드 점선
       if (currentNode && !isCleared) {
         ctx.beginPath();
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 3.5;
         ctx.strokeStyle = '#facc15';
         ctx.setLineDash([6, 6]);
         ctx.moveTo(currentNode.x, currentNode.y);
@@ -971,28 +989,32 @@
         ctx.setLineDash([]);
       }
 
+      // 4. 꼭짓점(원) 그리기 (반지름 22px의 뚜렷한 원과 글씨)
       stage.nodes.forEach((node) => {
         const isCurrent = currentNode && currentNode.id === node.id;
         const deg = getNodeDegree(node.id);
         const isOdd = deg % 2 !== 0;
 
         ctx.beginPath();
-        ctx.arc(node.x, node.y, 20, 0, Math.PI * 2);
+        ctx.arc(node.x, node.y, 22, 0, Math.PI * 2);
+
+        // 현재 점은 강렬한 로즈 핑크, 홀수점 표시는 빨강, 기본점은 딥 네이비
         ctx.fillStyle = isCurrent ? '#f43f5e' : (showDegrees && isOdd ? '#e11d48' : '#1e293b');
         ctx.fill();
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = isCurrent ? '#ffffff' : (showDegrees && isOdd ? '#fda4af' : '#64748b');
+
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = isCurrent ? '#ffffff' : (showDegrees && isOdd ? '#fda4af' : '#38bdf8');
         ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 14px sans-serif';
+        ctx.font = 'bold 15px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(showDegrees ? `${deg}` : `${node.id}`, node.x, node.y);
       });
     }
 
-    // 접속 시 이전 대원 자동 확인
+    // 초기 접속 시 처리
     window.onload = function() {
       const lastKey = localStorage.getItem("euler_last_key");
       if (lastKey) {
@@ -1007,7 +1029,6 @@
 
               document.getElementById('login-modal').style.display = 'none';
               document.getElementById('display-student').innerText = `대원: ${currentStudent.id} ${currentStudent.name} (변경)`;
-              updateStageSelectOptions();
               initStage(currentStageIndex);
               return;
             }
