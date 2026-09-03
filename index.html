@@ -8,7 +8,7 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      padding: 12px;
+      padding: 8px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -17,10 +17,10 @@
       color: #f1f5f9;
       min-height: 100vh;
     }
-    header { text-align: center; margin-bottom: 6px; }
+    header { text-align: center; margin-bottom: 4px; }
     h1 {
       margin: 0 0 2px 0;
-      font-size: 24px;
+      font-size: 20px;
       color: #38bdf8;
       letter-spacing: -0.5px;
     }
@@ -29,63 +29,75 @@
       color: #94a3b8;
       font-weight: 500;
       letter-spacing: 0.5px;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
     .top-panel {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
       background: #1e293b;
-      padding: 8px 18px;
-      border-radius: 20px;
+      padding: 6px 12px;
+      border-radius: 16px;
       border: 1px solid #334155;
-      margin-bottom: 10px;
-      font-size: 14px;
+      margin-bottom: 8px;
+      font-size: 13px;
       font-weight: 600;
       flex-wrap: wrap;
       justify-content: center;
       max-width: 700px;
       width: 100%;
     }
+    .stage-nav-box {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .nav-arrow-btn {
+      padding: 4px 8px;
+      font-size: 12px;
+      background: #334155;
+      color: #38bdf8;
+      border-radius: 6px;
+    }
     select {
       background: #0f172a;
       color: #38bdf8;
       border: 1px solid #475569;
-      padding: 5px 10px;
+      padding: 4px 8px;
       border-radius: 6px;
       font-weight: bold;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
       outline: none;
+      max-width: 180px;
     }
     .badge { color: #facc15; }
     .student-badge {
       background: #334155;
-      padding: 3px 10px;
-      border-radius: 12px;
+      padding: 3px 8px;
+      border-radius: 10px;
       color: #38bdf8;
       cursor: pointer;
-      transition: background 0.2s;
+      font-size: 12px;
     }
-    .student-badge:hover { background: #475569; }
     .timer-badge {
       background: #0f172a;
       border: 1px solid #38bdf8;
-      padding: 3px 10px;
-      border-radius: 12px;
+      padding: 3px 8px;
+      border-radius: 10px;
       color: #4ade80;
       font-family: monospace;
-      font-size: 14px;
+      font-size: 12px;
     }
     .game-board {
       position: relative;
-      border-radius: 16px;
+      border-radius: 14px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
       background: #0d1527;
-      border: 3px solid #38bdf8;
+      border: 2px solid #38bdf8;
       overflow: hidden;
       max-width: 100%;
-      margin: 4px 0;
+      margin: 2px 0;
       user-select: none;
       -webkit-user-select: none;
     }
@@ -98,18 +110,19 @@
       height: auto;
     }
     .guide-text {
-      margin-top: 10px;
-      font-size: 15px;
+      margin-top: 6px;
+      font-size: 13px;
       font-weight: bold;
-      min-height: 24px;
+      min-height: 20px;
       text-align: center;
       color: #94a3b8;
       max-width: 680px;
+      padding: 0 8px;
     }
     .controls {
-      margin-top: 12px;
+      margin-top: 8px;
       display: flex;
-      gap: 8px;
+      gap: 6px;
       flex-wrap: wrap;
       justify-content: center;
       max-width: 700px;
@@ -117,35 +130,31 @@
       -webkit-user-select: none;
     }
     button {
-      padding: 9px 15px;
-      font-size: 13px;
+      padding: 7px 12px;
+      font-size: 12px;
       font-weight: 600;
       border: none;
-      border-radius: 8px;
+      border-radius: 7px;
       cursor: pointer;
       background: #38bdf8;
       color: #0f172a;
       transition: all 0.15s ease;
       touch-action: manipulation;
     }
-    button:hover { background: #7dd3fc; transform: translateY(-1px); }
+    button:hover { background: #7dd3fc; }
     button:disabled {
       background: #475569 !important;
       color: #94a3b8 !important;
       cursor: not-allowed;
-      transform: none;
     }
     button.secondary { background: #334155; color: #f1f5f9; }
-    button.secondary:hover { background: #475569; }
     button.impossible-btn { background: #ef4444; color: white; }
-    button.impossible-btn:hover { background: #dc2626; }
     button.submit-btn { background: #10b981; color: white; font-weight: bold; }
-    button.submit-btn:hover { background: #059669; }
     button.toggle-active { background: #8b5cf6; color: white; }
     .difficulty-tag {
-      padding: 3px 8px;
+      padding: 2px 6px;
       border-radius: 4px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: bold;
     }
     .diff-1 { background: #15803d; color: #bbf7d0; }
@@ -154,7 +163,6 @@
     .diff-4 { background: #be123c; color: #fecdd3; }
     .diff-5 { background: #6b21a8; color: #f5d0fe; }
 
-    /* 모달 및 입력창 */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -163,44 +171,43 @@
       justify-content: center;
       align-items: center;
       z-index: 1000;
-      padding: 20px;
+      padding: 16px;
     }
     .modal-box {
       background: #1e293b;
       border: 2px solid #38bdf8;
       border-radius: 14px;
-      max-width: 440px;
+      max-width: 420px;
       width: 100%;
-      padding: 22px;
+      padding: 18px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     }
-    .modal-box h3 { margin: 0 0 10px 0; color: #38bdf8; font-size: 18px; text-align: center; }
+    .modal-box h3 { margin: 0 0 10px 0; color: #38bdf8; font-size: 17px; text-align: center; }
     .input-field {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       border-radius: 8px;
       border: 1px solid #475569;
       background: #0f172a;
       color: #f8fafc;
-      font-size: 15px;
-      margin-bottom: 12px;
+      font-size: 14px;
+      margin-bottom: 10px;
       outline: none;
     }
     .input-field:focus {
       border-color: #38bdf8;
-      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
     }
-    textarea.input-field { resize: vertical; min-height: 80px; font-family: inherit; }
-    .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 15px; }
+    textarea.input-field { resize: vertical; min-height: 70px; font-family: inherit; }
+    .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
     .table-container {
-      max-height: 240px;
+      max-height: 220px;
       overflow-y: auto;
       border: 1px solid #334155;
       border-radius: 6px;
-      margin-top: 10px;
+      margin-top: 8px;
     }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: center; }
-    th, td { padding: 8px 6px; border-bottom: 1px solid #334155; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; }
+    th, td { padding: 6px 4px; border-bottom: 1px solid #334155; }
     th { background: #0f172a; color: #38bdf8; position: sticky; top: 0; }
   </style>
 </head>
@@ -210,14 +217,14 @@
   <div class="modal-overlay" id="login-modal">
     <div class="modal-box">
       <h3>👋 수학 탐구 대원 등록</h3>
-      <p style="font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 16px;">
+      <p style="font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 14px;">
         학번과 이름을 입력하세요.<br>
-        <span style="color: #4ade80;">⭐ 동일한 학번/이름으로 재접속 시 성공 기록이 자동 복원됩니다.</span>
+        <span style="color: #4ade80;">⭐ 동일한 학번/이름 입력 시 이전 기록이 자동 복원됩니다.</span>
       </p>
       <input type="text" id="input-student-id" class="input-field" placeholder="학번 입력 (예: 1105)" autocomplete="off">
       <input type="text" id="input-student-name" class="input-field" placeholder="이름 입력 (예: 홍길동)" autocomplete="off">
-      <div style="display: flex; justify-content: center; margin-top: 5px;">
-        <button id="btn-start-game" type="button" style="width: 100%; padding: 12px; font-size: 15px; font-weight: bold;">탐구 시작하기 🚀</button>
+      <div style="display: flex; justify-content: center; margin-top: 4px;">
+        <button id="btn-start-game" type="button" style="width: 100%; padding: 10px; font-size: 14px; font-weight: bold;">탐구 시작하기 🚀</button>
       </div>
     </div>
   </div>
@@ -229,11 +236,16 @@
 
   <div class="top-panel">
     <span class="student-badge" id="display-student" title="클릭 시 대원 변경">대원: - (변경)</span>
-    <div>
+    
+    <!-- 상단 간편 이전/다음 탐색기 -->
+    <div class="stage-nav-box">
+      <button class="nav-arrow-btn" id="btn-top-prev" title="이전 스테이지">◀</button>
       <select id="stage-select"></select>
+      <button class="nav-arrow-btn" id="btn-top-next" title="다음 스테이지">▶</button>
     </div>
+
     <span id="diff-badge" class="difficulty-tag diff-1">입문</span>
-    <div>남은 선: <span id="ui-remaining" class="badge">0</span> / <span id="ui-total">0</span></div>
+    <div>선: <span id="ui-remaining" class="badge">0</span>/<span id="ui-total">0</span></div>
     <span class="timer-badge" id="ui-timer">⏱️ 00:00</span>
   </div>
 
@@ -245,21 +257,22 @@
 
   <div class="controls">
     <button id="btn-prev" class="secondary">◀ 이전</button>
+    <button id="btn-next-nav" class="secondary" style="background: #0284c7; color: white;">다음 ▶</button>
     <button id="btn-reset" class="secondary">🔄 다시 하기</button>
     <button id="btn-undo" class="secondary">↩ 1단계 취소</button>
     <button id="btn-degree" class="secondary">🔍 차수 보기</button>
     <button id="btn-impossible" class="impossible-btn">🚫 불가능 판정</button>
     <button id="btn-quiz-hint">💡 퀴즈 힌트</button>
     <button id="btn-view-records" style="background: #eab308; color: #0f172a;">📊 학습 기록</button>
-    <button id="btn-submit-sheet" class="submit-btn">🚀 선생님께 제출하기</button>
-    <button id="btn-next" style="display: none; background: #22c55e; color: white;">다음 스테이지 ▶</button>
+    <button id="btn-submit-sheet" class="submit-btn">🚀 선생님께 제출</button>
+    <button id="btn-next-clear" style="display: none; background: #22c55e; color: white; font-weight: bold;">🎉 다음 스테이지 이동 ▶</button>
   </div>
 
   <!-- 퀴즈 모달 -->
   <div class="modal-overlay" id="quiz-modal" style="display: none;">
     <div class="modal-box">
       <h3>📐 힌트 해금 수학 퀴즈</h3>
-      <div class="quiz-q" id="quiz-question" style="font-size: 14px; margin-bottom: 12px; color: #e2e8f0; line-height: 1.4;">문제를 불러오는 중...</div>
+      <div class="quiz-q" id="quiz-question" style="font-size: 13px; margin-bottom: 12px; color: #e2e8f0; line-height: 1.4;">문제를 불러오는 중...</div>
       <input type="text" class="input-field" id="quiz-answer" placeholder="정답을 입력하세요">
       <div class="modal-btns">
         <button id="btn-quiz-cancel" class="secondary">닫기</button>
@@ -270,9 +283,9 @@
 
   <!-- 학습 기록 모달 -->
   <div class="modal-overlay" id="records-modal" style="display: none;">
-    <div class="modal-box" style="max-width: 520px;">
+    <div class="modal-box" style="max-width: 480px;">
       <h3>📊 한붓그리기 학습 리포트</h3>
-      <div style="font-size: 13px; color: #94a3b8; display: flex; justify-content: space-between; margin-bottom: 8px;">
+      <div style="font-size: 12px; color: #94a3b8; display: flex; justify-content: space-between; margin-bottom: 6px;">
         <span id="record-student-info">학번: - | 성명: -</span>
         <span id="record-clear-count">클리어: 0 / 100</span>
       </div>
@@ -302,8 +315,8 @@
   <div class="modal-overlay" id="submit-modal" style="display: none;">
     <div class="modal-box">
       <h3>🚀 선생님께 학습 결과 제출하기</h3>
-      <div id="submit-summary" style="background: #0f172a; padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.6; margin-bottom: 14px; border: 1px solid #334155;"></div>
-      <label style="display: block; font-size: 13px; color: #38bdf8; font-weight: bold; margin-bottom: 6px;">
+      <div id="submit-summary" style="background: #0f172a; padding: 10px; border-radius: 8px; font-size: 12px; line-height: 1.6; margin-bottom: 12px; border: 1px solid #334155;"></div>
+      <label style="display: block; font-size: 12px; color: #38bdf8; font-weight: bold; margin-bottom: 4px;">
         💬 선생님께 남기는 한마디 (소감 / 질문 등)
       </label>
       <textarea id="submit-comment" class="input-field" placeholder="오늘 수업에서 느낀 점이나 질문을 자유롭게 적어보세요! (선택사항)"></textarea>
@@ -317,7 +330,6 @@
   <script>
     const GOOGLE_SHEET_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyU4fpwiJTUsuYGXdFM6tXTstOqVHXyCbKMvZYSVB9gPOFUYvEj_ylu0jh9vHbswMhUIQ/exec";
 
-    // 1. 오디오 엔진
     let audioCtx = null;
     function playTone(freq, type, duration) {
       try {
@@ -343,7 +355,6 @@
     function soundWin() { playTone(523, 'sine', 0.15); setTimeout(() => playTone(659, 'sine', 0.25), 100); }
     function soundFail() { playTone(180, 'sawtooth', 0.2); }
 
-    // 2. 학생 데이터 저장소
     let currentStudent = { id: "", name: "" };
     let stageRecords = {};
     let currentStageIndex = 0;
@@ -384,7 +395,6 @@
       return false;
     }
 
-    // 3. 타이머
     let stageTimer = null;
     let stageElapsedSeconds = 0;
 
@@ -409,14 +419,14 @@
       if (el) el.innerText = `⏱️ ${formatTime(stageElapsedSeconds)}`;
     }
 
-    // 4. [무한루프 원천 제거] 100개 스테이지 생성
+    // 100개 스테이지 생성
     const stages = [];
     function getDiffInfo(stNum) {
-      if (stNum <= 20) return { name: "입문 (기초도형)", cls: "diff-1" };
-      if (stNum <= 40) return { name: "초급 (다각바퀴)", cls: "diff-2" };
-      if (stNum <= 60) return { name: "중급 (이중동심망)", cls: "diff-3" };
-      if (stNum <= 80) return { name: "고급 (다면체투영)", cls: "diff-4" };
-      return { name: "마스터 (위상차원망)", cls: "diff-5" };
+      if (stNum <= 20) return { name: "입문", cls: "diff-1" };
+      if (stNum <= 40) return { name: "초급", cls: "diff-2" };
+      if (stNum <= 60) return { name: "중급", cls: "diff-3" };
+      if (stNum <= 80) return { name: "고급", cls: "diff-4" };
+      return { name: "마스터", cls: "diff-5" };
     }
 
     function buildCleanStage(level) {
@@ -424,8 +434,6 @@
       let title = "";
       let nodes = [];
       let edges = [];
-
-      // 특정 스테이지는 오일러 정리에 의해 한붓그리기 불가 (홀수점 4개 고정)
       const isImpossible = [7, 14, 21, 35, 49, 63, 77, 91].includes(level);
 
       if (level === 1) {
@@ -449,7 +457,7 @@
         nodes = [{id:0,x:130,y:250},{id:1,x:290,y:130},{id:2,x:290,y:370},{id:3,x:450,y:250},{id:4,x:570,y:130},{id:5,x:570,y:370}];
         edges = [{u:0,v:1},{u:0,v:2},{u:1,v:3},{u:2,v:3},{u:1,v:2},{u:3,v:4},{u:4,v:5},{u:5,v:3}];
       } else if (isImpossible) {
-        title = `쾨니히스베르크형 망 (Lv.${level})`;
+        title = `쾨니히스베르크형 (Lv.${level})`;
         nodes = [{id:0,x:340,y:90},{id:1,x:170,y:250},{id:2,x:510,y:250},{id:3,x:340,y:410}];
         edges = [
           {u:0,v:1,curvature:-35},{u:0,v:1,curvature:35},
@@ -495,7 +503,6 @@
         }
       }
 
-      // 안전한 유한 보정 (무한 루프 방지)
       if (!isImpossible) {
         const deg = new Array(nodes.length).fill(0);
         edges.forEach(e => { deg[e.u]++; deg[e.v]++; });
@@ -519,7 +526,6 @@
       stages.push(buildCleanStage(i));
     }
 
-    // 5. 그래픽 & 상호작용
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     canvas.width = 680;
@@ -600,8 +606,12 @@
       currentNode = null;
       visitedEdges = [];
       isCleared = false;
-      document.getElementById('btn-next').style.display = 'none';
+      document.getElementById('btn-next-clear').style.display = 'none';
+      
       document.getElementById('btn-prev').disabled = (currentStageIndex === 0);
+      document.getElementById('btn-top-prev').disabled = (currentStageIndex === 0);
+      document.getElementById('btn-next-nav').disabled = (currentStageIndex === stages.length - 1);
+      document.getElementById('btn-top-next').disabled = (currentStageIndex === stages.length - 1);
 
       const stage = stages[currentStageIndex];
       document.getElementById('ui-total').innerText = stage.edges.length;
@@ -670,7 +680,7 @@
       } else {
         soundFail();
         const guide = document.getElementById('ui-msg');
-        guide.innerText = "❌ 두 꼭짓점 사이에 지나갈 수 있는 남은 선이 없습니다!";
+        guide.innerText = "❌ 두 꼭짓점 사이에 남은 연결선이 없습니다!";
         guide.style.color = "#f87171";
       }
       render();
@@ -730,7 +740,7 @@
       guide.style.color = "#4ade80";
 
       if (currentStageIndex < stages.length - 1) {
-        document.getElementById('btn-next').style.display = 'inline-block';
+        document.getElementById('btn-next-clear').style.display = 'inline-block';
       }
     }
 
@@ -770,7 +780,7 @@
     canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handlePointerDown(e); }, { passive: false });
     window.addEventListener('touchmove', (e) => { e.preventDefault(); handlePointerMove(e); }, { passive: false });
 
-    // 퀴즈
+    // 퀴즈 모달
     const quizPool = [
       { q: "가장 작은 소수(Prime Number)는 무엇일까요?", a: "2" },
       { q: "12와 18의 최대공약수(GCD)는 얼마일까요?", a: "6" },
@@ -809,7 +819,6 @@
       }
     }
 
-    // 기록 및 CSV
     function openRecordsModal() {
       document.getElementById('record-student-info').innerText = `학번: ${currentStudent.id} | 성명: ${currentStudent.name}`;
       const clrCount = Object.values(stageRecords).filter(r => r.cleared).length;
@@ -860,7 +869,6 @@
       link.click();
     }
 
-    // 제출
     let pendingData = null;
     function openSubmitModal() {
       const clearedIds = Object.keys(stageRecords).map(Number).filter(id => stageRecords[id].cleared).sort((a,b)=>a-b);
@@ -917,7 +925,6 @@
       });
     }
 
-    // 렌더링
     function drawEdge(u, v, curvature, isVisited) {
       ctx.beginPath();
       ctx.lineWidth = isVisited ? 8 : 5;
@@ -959,20 +966,17 @@
       const stage = stages[currentStageIndex];
       if (!stage) return;
 
-      // 미방문 선
       stage.edges.forEach((edge, idx) => {
         if (!visitedEdges.includes(idx)) {
           drawEdge(stage.nodes[edge.u], stage.nodes[edge.v], edge.curvature, false);
         }
       });
 
-      // 방문한 선
       visitedEdges.forEach((edgeIdx) => {
         const edge = stage.edges[edgeIdx];
         drawEdge(stage.nodes[edge.u], stage.nodes[edge.v], edge.curvature, true);
       });
 
-      // 포인터 가이드 점선
       if (currentNode && !isCleared) {
         ctx.beginPath();
         ctx.lineWidth = 3.5;
@@ -984,7 +988,6 @@
         ctx.setLineDash([]);
       }
 
-      // 꼭짓점(원)
       stage.nodes.forEach((node) => {
         const isCurrent = currentNode && currentNode.id === node.id;
         const deg = getNodeDegree(node.id);
@@ -1007,7 +1010,7 @@
       });
     }
 
-    // 6. 이벤트 리스너 일괄 등록
+    // 6. 이벤트 바인딩
     document.getElementById('btn-start-game').addEventListener('click', handleLogin);
     document.getElementById('input-student-id').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') document.getElementById('input-student-name').focus();
@@ -1018,16 +1021,29 @@
 
     document.getElementById('display-student').addEventListener('click', openLoginModal);
     document.getElementById('stage-select').addEventListener('change', (e) => initStage(parseInt(e.target.value)));
+    
+    // 네비게이션 버튼 바인딩
     document.getElementById('btn-prev').addEventListener('click', () => {
       if (currentStageIndex > 0) initStage(currentStageIndex - 1);
     });
-    document.getElementById('btn-next').addEventListener('click', () => {
+    document.getElementById('btn-top-prev').addEventListener('click', () => {
+      if (currentStageIndex > 0) initStage(currentStageIndex - 1);
+    });
+    document.getElementById('btn-next-nav').addEventListener('click', () => {
       if (currentStageIndex < stages.length - 1) initStage(currentStageIndex + 1);
     });
+    document.getElementById('btn-top-next').addEventListener('click', () => {
+      if (currentStageIndex < stages.length - 1) initStage(currentStageIndex + 1);
+    });
+    document.getElementById('btn-next-clear').addEventListener('click', () => {
+      if (currentStageIndex < stages.length - 1) initStage(currentStageIndex + 1);
+    });
+
     document.getElementById('btn-reset').addEventListener('click', () => initStage(currentStageIndex));
     document.getElementById('btn-undo').addEventListener('click', handleUndo);
     document.getElementById('btn-degree').addEventListener('click', toggleDegree);
     document.getElementById('btn-impossible').addEventListener('click', handleImpossibleCheck);
+    
     document.getElementById('btn-quiz-hint').addEventListener('click', openQuizModal);
     document.getElementById('btn-quiz-cancel').addEventListener('click', () => {
       document.getElementById('quiz-modal').style.display = 'none';
@@ -1050,7 +1066,7 @@
     });
     document.getElementById('btn-submit-confirm').addEventListener('click', sendSubmission);
 
-    // 7. 페이지 초기 로드
+    // 7. 초기 로드
     window.addEventListener('DOMContentLoaded', () => {
       const lastKey = localStorage.getItem("euler_last_active_key");
       if (lastKey) {
